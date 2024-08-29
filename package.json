@@ -17,14 +17,15 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win:cross": "npm run build && electron-builder --win --linux tar.xz",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac:cross": "npm run build && electron-builder --mac --linux tar.xz",
-    "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux tar.xz"
+    "build:unpack": "modclean --run --patterns=default:safe && npm run build && electron-builder --dir",
+    "build:win:cross": "modclean --run --patterns=default:safe && npm run build && electron-builder --win --linux tar.xz",
+    "build:win": "modclean --run --patterns=default:safe && npm run build && electron-builder --win",
+    "build:mac:cross": "modclean --run --patterns=default:safe && npm run build && electron-builder --mac --linux tar.xz",
+    "build:mac": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --mac",
+    "build:linux": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --linux tar.xz"
   },
   "dependencies": {
+    "@editorjs/checklist": "^1.6.0",
     "@editorjs/editorjs": "^2.30.5",
     "@editorjs/header": "^2.8.7",
     "@editorjs/list": "^1.10.0",
@@ -54,7 +55,6 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@editorjs/checklist": "^1.6.0",
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
