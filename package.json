@@ -22,8 +22,8 @@
     "build:unpack": "modclean --run --patterns=default:safe && npm run build && electron-builder --dir",
     "build:win:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win --linux tar.xz",
     "build:win": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win",
-    "build:mac:cross": "modclean --run --patterns=default:safe && npm run build && electron-builder --mac --linux tar.xz",
-    "build:mac": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --mac",
+    "build:mac:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify && electron-builder --mac --linux tar.xz",
+    "build:mac": "modclean --run --patterns=default:safe && electron-vite build && npm run minify && electron-builder --mac",
     "build:linux": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --linux tar.xz"
   },
   "dependencies": {
