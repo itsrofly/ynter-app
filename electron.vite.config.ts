@@ -1,11 +1,11 @@
 import { resolve } from 'path'
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { bytecodePlugin, defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin(), sentryVitePlugin({
+    plugins: [externalizeDepsPlugin(), bytecodePlugin(), sentryVitePlugin({
       org: "ynter",
       project: "electron"
     })],
@@ -19,7 +19,7 @@ export default defineConfig({
     }
   },
   preload: {
-    plugins: [externalizeDepsPlugin(), sentryVitePlugin({
+    plugins: [externalizeDepsPlugin(), bytecodePlugin(), sentryVitePlugin({
       org: "ynter",
       project: "electron"
     })],
