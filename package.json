@@ -89,9 +89,6 @@
       "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}",
       "!**/fonts/*"
     ],
-    "asarUnpack": [
-      "resources/**"
-    ],
     "win": {
       "executableName": "ynter",
       "target": [
