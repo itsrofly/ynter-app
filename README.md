@@ -12,6 +12,7 @@ An Electron application with React and TypeScript
 
 ```bash
 $ npm install
+$ npm install -g modclean
 ```
 
 ### Development
@@ -31,4 +32,10 @@ $ npm run build:mac
 
 # For Linux
 $ npm run build:linux
+
+# For Windows & Linux
+$ npm run build:win:cross
+
+# For Mac & Linux
+$ npm run build:mac:cross
 ```
