@@ -13,6 +13,7 @@ An Electron application with React and TypeScript
 ```bash
 $ npm install
 $ npm install -g modclean
+$ npm install -g uglify-js
 ```
 
 ### Development

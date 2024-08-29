@@ -17,9 +17,11 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
+    "minify:win": "powershell -Command \"Get-ChildItem -Path '.\\out' -Recurse -File | Where-Object { $_.Name -like '*js*' -and $_.Name -notlike '*jsc*' -and $_.Name -notlike '*map*' } | ForEach-Object { uglifyjs $_.FullName -o $_.FullName -c }\"",
+    "minify": "find ./out -type f -name '*.js' ! -name '*jsc*' ! -name '*map*' -exec uglifyjs {} -o {} -c \\;",
     "build:unpack": "modclean --run --patterns=default:safe && npm run build && electron-builder --dir",
-    "build:win:cross": "modclean --run --patterns=default:safe && npm run build && electron-builder --win --linux tar.xz",
-    "build:win": "modclean --run --patterns=default:safe && npm run build && electron-builder --win",
+    "build:win:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win --linux tar.xz",
+    "build:win": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win",
     "build:mac:cross": "modclean --run --patterns=default:safe && npm run build && electron-builder --mac --linux tar.xz",
     "build:mac": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --mac",
     "build:linux": "modclean --run --patterns=default:safe && electron-vite build && electron-builder --linux tar.xz"
@@ -75,6 +77,7 @@
   },
   "build": {
     "appId": "app.ynter.co",
+    "compression": "maximum",
     "copyright": "Copyright © 2024 ynter",
     "productName": "Ynter",
     "directories": {
@@ -84,7 +87,7 @@
       "!**/.vscode/*",
       "!src/*",
       "!electron.vite.config.{js,ts,mjs,cjs}",
-      "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}",
+      "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,electron.afterpack.js}",
       "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
       "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}",
       "!**/fonts/*"

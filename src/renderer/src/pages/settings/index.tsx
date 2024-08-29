@@ -72,6 +72,7 @@ function Settings() {
                                     localStorage.removeItem("user:email");
                                     localStorage.removeItem("user:name");
                                     window.location.replace("#");
+                                    window.location.reload();
                                 }}>
                                 Sign Out
                             </a>
