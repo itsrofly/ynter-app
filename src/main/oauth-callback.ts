@@ -1,12 +1,10 @@
-import * as Sentry from "@sentry/electron/main";
 const http = require('http');
 const url = require('url');
 const { webContents } = require('electron')
 
+// @ts-ignore
+const WEBSITE = import.meta.env.VITE_WEBSITE;
 
-Sentry.init({
-  dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
-});
 export const callback_server = () => {
   const webContent = webContents.getFocusedWebContents();
   // Maintain a hash of all connected sockets
@@ -23,7 +21,7 @@ export const callback_server = () => {
     const error = query.error || undefined;
 
     res.writeHead(301, {
-      'Location': 'https://google.com'
+      'Location': "https://google.com/" // WEBSITE + "/Session/Application"
     });
     res.end(); // End the response
 

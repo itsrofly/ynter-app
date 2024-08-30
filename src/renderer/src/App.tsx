@@ -15,14 +15,18 @@ import { updateRecurring } from "./components/support";
 // Auth
 import { createClient } from "@supabase/supabase-js";
 
+import * as Sentry from "@sentry/electron/renderer";
+
 // External
 import "./global.css";
 import "./layouts.css";
-import * as Sentry from "@sentry/electron/renderer";
 
-Sentry.init({
-  dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
-});
+(async () => {
+  Sentry.init({
+    dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
+  });
+})();
+
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

@@ -8,7 +8,8 @@ import {
     fetchAmountByCategory, fetchCurrentAmount, fetchReceipt,
     handleSubmitReceipt, handleUpdateReceipt, receiptCategory, BankType,
     NumberFormater,
-    abbreviateString
+    abbreviateString,
+    NumberFormaterData
 } from "../../components/support";
 
 // Recharts
@@ -209,7 +210,7 @@ function Revenue() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Category" interval={0} tickLine={false} scale="point" tick={(props) => <CustomIconRevenue height="24px" width="24px" x={props.x} y={props.y} payload={props.payload} />} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white"  }} />
                                 <Bar type="monotone" dataKey="Previous" fill="#ffc658" />
                                 <Bar type="monotone" dataKey="Current" fill="#8884d8" />
                             </BarChart>
@@ -247,7 +248,7 @@ function Revenue() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Name" tick={{ fill: 'white' }} tickLine={false} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                                 <Line type="monotone" dataKey="Revenue" stroke="white" activeDot={false} />
                             </LineChart>
                         </ResponsiveContainer>

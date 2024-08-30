@@ -102,7 +102,10 @@ export async function fetchCurrentAmount(
       WHERE
         strftime('${time}', date) == strftime('${time}', date('now'))
     `)
-    return result[0].value;
+
+    // Round to 2 decimal places
+    const roundedValue = parseFloat(result[0].value.toFixed(2));
+    return roundedValue;
 }
 
 export async function fetchAmountByTimeline(
@@ -480,6 +483,10 @@ export const NumberFormater = (number) => {
         return number.toString();
     }
 }
+
+export const NumberFormaterData = (value) => {
+    return value.toFixed(2);
+};
 
 export function abbreviateString(str, maxLength) {
     if (str.length <= maxLength) {

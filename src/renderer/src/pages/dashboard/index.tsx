@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 // Components
 // import { Agenda, fetchEventData } from "../agenda";
 import { CustomIconExpenses } from '../expenses';
-import { fetchAmountByCategory, fetchCurrentAmount, NumberFormater }
+import { fetchAmountByCategory, fetchCurrentAmount, NumberFormater, NumberFormaterData }
     from "../../components/support";
 
 
@@ -780,7 +780,7 @@ function Dashboard() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Name" tick={{ fill: 'white' }} tickLine={false} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                                 <Line type="monotone" dataKey="Revenue" stroke="#00aa00" activeDot={false} />
                                 <Line type="monotone" dataKey="Expenses" stroke="#ca3838" activeDot={false} />
                             </LineChart>
@@ -820,7 +820,7 @@ function Dashboard() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Category" interval={0} tickLine={false} scale="point" tick={(props) => <CustomIconExpenses height="24px" width="24px" x={props.x} y={props.y} payload={props.payload} />} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                                 <Bar type="monotone" dataKey="Previous" fill="#ffc658" />
                                 <Bar type="monotone" dataKey="Current" fill="#8884d8" />
                             </BarChart>

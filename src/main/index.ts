@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
-import { connection } from './knex'
+import { connection, connectionUtils } from './knex'
 import { callback_server } from './oauth-callback'
 import { readFileSync, statSync, unlink } from 'fs'
 import * as Sentry from "@sentry/electron/main";
@@ -12,11 +12,12 @@ const XLSX = require('xlsx');
 
 let mainWindow
 
+(async () => {
+  Sentry.init({
+    dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
+  });
+})();
 
-
-Sentry.init({
-  dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
-});
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -115,8 +116,9 @@ if (!gotTheLock) {
     // Start callback server event
     ipcMain.handle('Server:start', callback_server)
 
-    // Open/create database event
+    // Open/create/execute database event
     ipcMain.handle('Database:open', connection)
+    ipcMain.handle('Utils:open', connectionUtils)
 
     // Show error window event
     ipcMain.handle("Show:error", (_ev, title, content) => {
