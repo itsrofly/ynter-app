@@ -112,6 +112,7 @@ function NewReceipt({ table, refresh, setRefresh, form, handleSubmit }: {
                                             <select className="form-select custom-select"
                                                 value={catValue} onChange={(e) => setCatValue(e.target.value)}>
                                                 {receiptCategory(table).map((data, index) => {
+                                                    // If value == -1 (Is All) or Is the last element (recurring), then ignore
                                                     if (data.value == -1 || data.value == receiptCategory(table).length - 2)
                                                         return;
                                                     return <option className="custom-option" key={index} value={data.value}>{data.label}</option>

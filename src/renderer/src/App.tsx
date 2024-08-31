@@ -48,6 +48,13 @@ async function finish_load() {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
+    const { error, data: {session} } = await supabase.auth.getSession();
+
+    if (!session) {
+      // remove if error
+      localStorage.removeItem("user:email");
+      localStorage.removeItem("user:name",)
+    }
 
     // Update all recurring receipts
     await updateRecurring("revenue");

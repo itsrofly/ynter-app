@@ -60,13 +60,12 @@ export const receiptCategory = (table: "revenue" | "expense") => {
     if (table == "revenue") {
         return [
             { value: -1, label: "All" },
-            { value: 0, label: "Work" },
-            { value: 1, label: "Bonus" },
-            { value: 2, label: "Family" },
-            { value: 3, label: "Cash Back" },
-            { value: 4, label: "Investments" },
-            { value: 5, label: "Others" },
-            { value: 6, label: "Recurring" }
+            { value: 0, label: "Income" },
+            { value: 1, label: "Investments" },
+            { value: 2, label: "Transfer in" },
+            { value: 3, label: "Savings" },
+            { value: 4, label: "Others" },
+            { value: 5, label: "Recurring" }
         ];
     } else {
         return [
@@ -104,8 +103,7 @@ export async function fetchCurrentAmount(
     `)
 
     // Round to 2 decimal places
-    const roundedValue = parseFloat(result[0].value.toFixed(2));
-    return roundedValue;
+    return NumberFormaterData(result[0].value);
 }
 
 export async function fetchAmountByTimeline(
@@ -185,12 +183,11 @@ export async function fetchAmountByCategory(
     const categories = table == "revenue" ?
         `          
     WITH categories AS (
-    SELECT 0 AS category, 'Work' AS category_name UNION ALL
+    SELECT 0 AS category, 'Income' AS category_name UNION ALL
     SELECT 1, 'Investments' UNION ALL
-    SELECT 2, 'Bonus' UNION ALL
-    SELECT 3, 'Cash Back' UNION ALL
-    SELECT 4, 'Family' UNION ALL
-    SELECT 5, 'Others'
+    SELECT 2, 'Transfer in' UNION ALL
+    SELECT 3, 'Savings' UNION ALL
+    SELECT 4, 'Others'
     )`
         :
         `
@@ -249,7 +246,6 @@ export async function fetchAmountByCategory(
     return result;
 };
 
-
 export async function
     fetchReceipt(
         timeline: "%Y-%m" | "%Y", table: "revenue" | "expense",
@@ -266,7 +262,7 @@ export async function
         switch (option) {
             case '-1':
                 return '';
-            case (table == "revenue" ? "6" : "13"):
+            case (table == "revenue" ? "5" : "13"):
                 return `AND recurring = 1`
             default:
                 return `AND category = ${option}`
@@ -341,9 +337,6 @@ export async function
     const result = await window.api.Database(query);
     return result as ReceiptList[];
 };
-
-
-
 
 
 export async function handleSubmitReceipt(values: FormState, table: string) {

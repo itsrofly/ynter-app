@@ -103,7 +103,7 @@ export async function fetchBalanceValue() {
     SELECT 
         (IFNULL((SELECT SUM(amount) FROM revenue), 0) - IFNULL((SELECT SUM(amount) FROM expense), 0)) AS value;
     `)
-    return result[0].value;
+    return NumberFormaterData(result[0].value);
 }
 
 // SQL to fech balance chart data

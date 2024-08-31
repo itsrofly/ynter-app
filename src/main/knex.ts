@@ -133,6 +133,7 @@ export const connectionUtils = async (_event, query: string, params?: any[]) => 
             params ? [...params] : []
         );
 
+        /*
         // If the query is an insert, retrieve the last inserted row
         if (query.trim().toLowerCase().startsWith("insert")) {
             // Extract the table name from the query
@@ -140,12 +141,13 @@ export const connectionUtils = async (_event, query: string, params?: any[]) => 
             if (match) {
                 const tableName = match[1];
                 const lastInsertedRowId = await conn.raw("SELECT last_insert_rowid() AS id;");
+                console.log(lastInsertedRowId);
                 const lastInsertedRow = await conn(tableName)
                     .where('id', lastInsertedRowId[0].id)
                     .first();
                 return lastInsertedRow;
             }
-        }
+        }*/
 
         // received data
         return data

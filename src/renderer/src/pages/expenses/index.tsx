@@ -197,7 +197,7 @@ function Expenses() {
     fetchBalance();
   }, [monthExpenses, refresh]);
 
-   // Fetch all expense amount separate by category
+  // Fetch all expense amount separate by category
   useEffect(() => {
     const fetchBalance = async () => {
       // Fetch all ex+emse amount separate by category of the previus and current month or year
@@ -267,7 +267,7 @@ function Expenses() {
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                 <XAxis dataKey="Category" interval={0} tickLine={false} scale="point" tick={(props) => <CustomIconExpenses height="24px" width="24px" x={props.x} y={props.y} payload={props.payload} />} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                <Tooltip formatter={(value) => NumberFormaterData(value)} contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                 <Bar type="monotone" dataKey="Previous" fill="#ffc658" />
                 <Bar type="monotone" dataKey="Current" fill="#8884d8" />
               </BarChart>
@@ -305,7 +305,7 @@ function Expenses() {
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                 <XAxis dataKey="Name" tick={{ fill: 'white' }} tickLine={false} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                <Tooltip formatter={(value) => NumberFormaterData(value)} contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                 <Line type="monotone" dataKey="Expense" stroke="white" activeDot={false} />
               </LineChart>
             </ResponsiveContainer>
@@ -418,7 +418,12 @@ function Expenses() {
                                 <div className="d-flex w-100 flex-column">
                                   <h5>
                                     {abbreviateString(exp.name, 20)}
-                                    {Boolean(exp.recurring) && <a className="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Recurring">{RevenueCategory(3).Icon}</a>}
+                                    {Boolean(exp.recurring) && <a className="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Recurring">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" className="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9" />
+                                        <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z" />
+                                      </svg>
+                                    </a>}
                                   </h5>
                                   <div className=" d-flex align-items-start">
                                     {category?.Icon}

@@ -36,26 +36,29 @@ const CustomIconRevenue = (props: { width: string, height: string, x?: number, y
     if (!x)
         x = 0;
     switch (payload.value) {
-        case 'Work':
+        case 'Income':
             return (
                 <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M160-120q-33 0-56.5-23.5T80-200v-440q0-33 23.5-56.5T160-720h160v-80q0-33 23.5-56.5T400-880h160q33 0 56.5 23.5T640-800v80h160q33 0 56.5 23.5T880-640v440q0 33-23.5 56.5T800-120H160Zm0-80h640v-440H160v440Zm240-520h160v-80H400v80ZM160-200v-440 440Z" /></svg>
             );
-        case 'Bonus':
-            return (
-                <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M160-80v-440H80v-240h208q-5-9-6.5-19t-1.5-21q0-50 35-85t85-35q23 0 43 8.5t37 23.5q17-16 37-24t43-8q50 0 85 35t35 85q0 11-2 20.5t-6 19.5h208v240h-80v440H160Zm400-760q-17 0-28.5 11.5T520-800q0 17 11.5 28.5T560-760q17 0 28.5-11.5T600-800q0-17-11.5-28.5T560-840Zm-200 40q0 17 11.5 28.5T400-760q17 0 28.5-11.5T440-800q0-17-11.5-28.5T400-840q-17 0-28.5 11.5T360-800ZM160-680v80h280v-80H160Zm280 520v-360H240v360h200Zm80 0h200v-360H520v360Zm280-440v-80H520v80h280Z" /></svg>
-            );
-        case 'Family':
-            return (
-                <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M720-720q-33 0-56.5-23.5T640-800q0-33 23.5-56.5T720-880q33 0 56.5 23.5T800-800q0 33-23.5 56.5T720-720ZM680-80v-320q0-40-20.5-72T607-522l35-103q8-25 29.5-40t48.5-15q27 0 48.5 15t29.5 40l102 305H800v240H680ZM500-500q-25 0-42.5-17.5T440-560q0-25 17.5-42.5T500-620q25 0 42.5 17.5T560-560q0 25-17.5 42.5T500-500ZM220-720q-33 0-56.5-23.5T140-800q0-33 23.5-56.5T220-880q33 0 56.5 23.5T300-800q0 33-23.5 56.5T220-720ZM140-80v-280H80v-240q0-33 23.5-56.5T160-680h120q33 0 56.5 23.5T360-600v240h-60v280H140Zm300 0v-160h-40v-160q0-25 17.5-42.5T460-460h80q25 0 42.5 17.5T600-400v160h-40v160H440Z" /></svg>
-            );
-        case 'Cash Back':
-            return (
-                <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M480-400q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0 280q-139 0-241-91.5T122-440h82q14 104 92.5 172T480-200q117 0 198.5-81.5T760-480q0-117-81.5-198.5T480-760q-69 0-129 32t-101 88h110v80H120v-240h80v94q51-64 124.5-99T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Z" /></svg>
-            )
         case 'Investments':
             return (
                 <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M320-414v-306h120v306l-60-56-60 56Zm200 60v-526h120v406L520-354ZM120-216v-344h120v224L120-216Zm0 98 258-258 142 122 224-224h-64v-80h200v200h-80v-64L524-146 382-268 232-118H120Z" /></svg>
             )
+        case 'Transfer in':
+            return (
+                <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} width={width} fill="#FFFFFF" className="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0z" />
+                    <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
+                </svg>
+            );
+        case 'Savings':
+            return (
+                <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} width={width} fill="#FFFFFF" className="bi bi-piggy-bank" viewBox="0 0 16 16">
+                    <path d="M5 6.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.138-1.496A6.6 6.6 0 0 1 7.964 4.5c.666 0 1.303.097 1.893.273a.5.5 0 0 0 .286-.958A7.6 7.6 0 0 0 7.964 3.5c-.734 0-1.441.103-2.102.292a.5.5 0 1 0 .276.962" />
+                    <path fill-rule="evenodd" d="M7.964 1.527c-2.977 0-5.571 1.704-6.32 4.125h-.55A1 1 0 0 0 .11 6.824l.254 1.46a1.5 1.5 0 0 0 1.478 1.243h.263c.3.513.688.978 1.145 1.382l-.729 2.477a.5.5 0 0 0 .48.641h2a.5.5 0 0 0 .471-.332l.482-1.351c.635.173 1.31.267 2.011.267.707 0 1.388-.095 2.028-.272l.543 1.372a.5.5 0 0 0 .465.316h2a.5.5 0 0 0 .478-.645l-.761-2.506C13.81 9.895 14.5 8.559 14.5 7.069q0-.218-.02-.431c.261-.11.508-.266.705-.444.315.306.815.306.815-.417 0 .223-.5.223-.461-.026a1 1 0 0 0 .09-.255.7.7 0 0 0-.202-.645.58.58 0 0 0-.707-.098.74.74 0 0 0-.375.562c-.024.243.082.48.32.654a2 2 0 0 1-.259.153c-.534-2.664-3.284-4.595-6.442-4.595M2.516 6.26c.455-2.066 2.667-3.733 5.448-3.733 3.146 0 5.536 2.114 5.536 4.542 0 1.254-.624 2.41-1.67 3.248a.5.5 0 0 0-.165.535l.66 2.175h-.985l-.59-1.487a.5.5 0 0 0-.629-.288c-.661.23-1.39.359-2.157.359a6.6 6.6 0 0 1-2.157-.359.5.5 0 0 0-.635.304l-.525 1.471h-.979l.633-2.15a.5.5 0 0 0-.17-.534 4.65 4.65 0 0 1-1.284-1.541.5.5 0 0 0-.446-.275h-.56a.5.5 0 0 1-.492-.414l-.254-1.46h.933a.5.5 0 0 0 .488-.393m12.621-.857a.6.6 0 0 1-.098.21l-.044-.025c-.146-.09-.157-.175-.152-.223a.24.24 0 0 1 .117-.173c.049-.027.08-.021.113.012a.2.2 0 0 1 .064.199" />
+                </svg>
+            );
+
         default:
             return (
                 <svg x={x - 12} y={y} xmlns="http://www.w3.org/2000/svg" height={height} viewBox="0 -960 960 960" width={width} fill="#FFFFFF"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" /></svg>
@@ -66,15 +69,13 @@ const CustomIconRevenue = (props: { width: string, height: string, x?: number, y
 export const RevenueCategory = (index: number) => {
     switch (index) {
         case 0:
-            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Work" } }), Label: 'Work' };
+            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Income" } }), Label: 'Income' };
         case 1:
-            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Bonus" } }), Label: 'Bonus' };
-        case 2:
-            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Family" } }), Label: 'Family' };
-        case 3:
-            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Cash Back" } }), Label: 'Cash Back' };
-        case 4:
             return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Investments" } }), Label: 'Investments' };
+        case 2:
+            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Transfer in" } }), Label: 'Transfer in' };
+        case 3:
+            return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Savings" } }), Label: 'Savings' };
         default:
             return { Icon: CustomIconRevenue({ width: "18px", height: "18px", payload: { value: "Others" } }), Label: 'Others' };
     }
@@ -116,7 +117,7 @@ function Revenue() {
     })
     const [formSubmit, setFormSubmit] = useState(true);
 
-      // Reset form values when this component is refresh
+    // Reset form values when this component is refresh
     useEffect(() => {
         setFormValue({
             name: "",
@@ -132,7 +133,7 @@ function Revenue() {
         })
     }, [refresh]);
 
-      // Fetch all revenue amount separate by month or year
+    // Fetch all revenue amount separate by month or year
     useEffect(() => {
         const fetchBalance = async () => {
             setRevenueData(await fetchAmountByTimeline(monthRevenue ? "m" : "y", "revenue"));
@@ -153,8 +154,8 @@ function Revenue() {
     }, [monthRevenueCat, refresh]);
 
 
-    
-  // Fetch all revenue in list of this month or year
+
+    // Fetch all revenue in list of this month or year
     useEffect(() => {
         const fetchBalance = async () => {
             setReceipts(await fetchReceipt(monthReceipt ? "%Y-%m" : "%Y", "revenue", dateList, selectedOption))
@@ -210,7 +211,7 @@ function Revenue() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Category" interval={0} tickLine={false} scale="point" tick={(props) => <CustomIconRevenue height="24px" width="24px" x={props.x} y={props.y} payload={props.payload} />} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white"  }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)} contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                                 <Bar type="monotone" dataKey="Previous" fill="#ffc658" />
                                 <Bar type="monotone" dataKey="Current" fill="#8884d8" />
                             </BarChart>
@@ -248,7 +249,7 @@ function Revenue() {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis dataKey="Name" tick={{ fill: 'white' }} tickLine={false} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'white' }} tickMargin={20} tickFormatter={NumberFormater} />
-                                <Tooltip formatter={(value) => NumberFormaterData(value)}  contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
+                                <Tooltip formatter={(value) => NumberFormaterData(value)} contentStyle={{ backgroundColor: "#171717", borderRadius: '5px', borderColor: "transparent", color: "white" }} />
                                 <Line type="monotone" dataKey="Revenue" stroke="white" activeDot={false} />
                             </LineChart>
                         </ResponsiveContainer>
@@ -359,7 +360,12 @@ function Revenue() {
                                                                 <div className="d-flex w-100 flex-column">
                                                                     <h5>
                                                                         {abbreviateString(rev.name, 20)}
-                                                                        {Boolean(rev.recurring) && <a className="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Recurring">{RevenueCategory(3).Icon}</a>}
+                                                                        {Boolean(rev.recurring) && <a className="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Recurring">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" className="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                                                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9" />
+                                                                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z" />
+                                                                            </svg>
+                                                                        </a>}
                                                                     </h5>
                                                                     <div className=" d-flex align-items-start">
                                                                         {category?.Icon}

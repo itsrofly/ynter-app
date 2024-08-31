@@ -21,6 +21,12 @@ interface PLAIDRECEIPT {
     },
 }
 
+interface BANK {
+    id: string,
+    institution_name: string,
+    cursor
+}
+
 async function exchangePublicToken(token, public_token) {
     const response = await fetch(PLAIDEXCHANGE, {
         method: "POST",
@@ -38,11 +44,16 @@ async function exchangePublicToken(token, public_token) {
     }
 }
 
+async function fetchBanks() {
+    const result = await window.api.Utils(`SELECT * FROM banks `,);
+    return result;
+}
+
 async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
     try {
         for (const receipt of added) {
             if (receipt.amount > 0) {
-    
+                // Insert on revenue
                 await window.api.Database(
                     `
                     INSERT INTO 
@@ -50,15 +61,15 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     `,
                     [
-                    receipt.transaction_id,
-                    receipt.name,
-                    receipt.amount,
-                    receipt.date,
-                    PlaidRevenueCategory(receipt.personal_finance_category),
-                    0, institution_name, 0
+                        receipt.transaction_id,
+                        receipt.name,
+                        receipt.amount,
+                        receipt.date,
+                        PlaidRevenueCategory(receipt.personal_finance_category),
+                        0, institution_name, 0
                     ]);
             } else {
-                // Expense
+                // Insert on expense
                 await window.api.Database(
                     `
                     INSERT INTO 
@@ -66,31 +77,108 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     `,
                     [
-                    receipt.transaction_id,
-                    receipt.name,
-                    (receipt.amount * -1),
-                    receipt.date,
-                    PlaidExpenseCategory(receipt.personal_finance_category),
-                    0, institution_name, 0
+                        receipt.transaction_id,
+                        receipt.name,
+                        (receipt.amount * -1),
+                        receipt.date,
+                        PlaidExpenseCategory(receipt.personal_finance_category),
+                        0, institution_name, 0
                     ]);
             }
         }
     } catch (error) {
-         throw error;
+        throw error;
     }
 }
 
-export async function TransactionsRefresh(id: string, cursor: string | null, institution_name: string) {
+async function plaidMod(added: PLAIDRECEIPT[]) {
+    try {
+        for (const receipt of added) {
+            if (receipt.amount > 0) {
+
+                // Update on revenue
+                await window.api.Database(
+                    `
+                    UPDATE revenue 
+                    SET  
+                        name = ?, 
+                        amount = ?, 
+                        date = ?,
+                        category = ?
+                    WHERE transaction_id = ?;
+                    `,
+                    [
+                        receipt.name,
+                        receipt.amount,
+                        receipt.date,
+                        PlaidRevenueCategory(receipt.personal_finance_category),
+                        receipt.transaction_id
+                    ]);
+            } else {
+                // Update on expense
+                await window.api.Database(
+                    `
+                    UPDATE expense 
+                    SET  
+                        name = ?, 
+                        amount = ?, 
+                        date = ?,
+                        category = ?
+                    WHERE transaction_id = ?;
+                    `,
+                    [
+                        receipt.name,
+                        receipt.amount * (-1),
+                        receipt.date,
+                        PlaidRevenueCategory(receipt.personal_finance_category),
+                        receipt.transaction_id
+                    ]);
+            }
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function plaidDel(added: PLAIDRECEIPT[]) {
+    try {
+        for (const receipt of added) {
+            // DELETE FROM revenue if exist
+            await window.api.Database(
+                `
+                DELETE FROM revenue
+                WHERE transaction_id = ?;
+                `,
+                [receipt.transaction_id]
+            );
+            // DELETE FROM expense if exist
+            await window.api.Database(
+                `
+                DELETE FROM expense
+                WHERE transaction_id = ?;
+                `,
+                [receipt.transaction_id]
+            )
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+export async function transactionsRefresh(id: string, cursor: string | null, institution_name: string) {
+    // Used to knwo if has more data
     let hasMore = true;
+    // Used to know the last inserted data
     let theCursor = cursor;
-    let added = [];
-    let modified = [];
-    let removed = [];
 
     try {
         // User data
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
+
+        if (!session)
+            return;
 
         while (hasMore) {
             const response = await fetch(PLAIDTRANSACTIONS, {
@@ -108,27 +196,50 @@ export async function TransactionsRefresh(id: string, cursor: string | null, ins
                 const res = await response.json();
                 const data = res.data;
 
-                // Add this page of results
-                added = added.concat(data.added);
-                modified = modified.concat(data.modified);
-                removed = removed.concat(data.removed);
+                // Add results
+                await plaidAdd(data.added, institution_name);
+
+                // Modify results
+                await plaidMod(data.modified)
+
+                // Delete results
+                await plaidDel(data.removed)
+
                 hasMore = data.has_more;
                 // Update cursor to the next cursor
                 theCursor = data.next_cursor;
-            }
+                // Update cursor on database
+                await window.api.Utils(
+                    `
+                    UPDATE banks
+                    SET cursor = ?
+                    WHERE id = ?;
+                    `,
+                    [theCursor, id]
+                )
+            } else {
+                console.error(response)
+                return;
+            };
         }
-        await plaidAdd(added, institution_name);
-
-        console.log(id, added, modified, removed, theCursor)
     } catch (error) {
+        window.api.showError(`Something has gone wrong.\nError code: 1.0v015`);
         console.error(error)
         return;
     }
 }
 
-async function fetchBanks() {
-    const result = await window.api.Utils(`SELECT * FROM banks `,);
-    return result;
+export async function transactionsRefreshaAll() {
+    // Get All banks
+    const banks: BANK[] = await fetchBanks();
+
+    try {
+        // Refresh bank per bank
+        for (const bank of banks)
+            await transactionsRefresh(bank.id, bank.cursor ?? null, bank.institution_name);
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 
@@ -242,11 +353,12 @@ function Settings() {
                             {feedback && <h6 className={"ms-4 " + feedback.class}>{feedback.message}</h6>}
 
                             <div className="m-auto d-inline-flex gap-4">
-                                <a href="#" className={"btn btn-outline-primary " + (loading ? "disabled" : "")} aria-disabled={(loading ? "true" : "false")} style={{ width: "200px" }}
+                                <a href="#" className={"btn btn-outline-primary " + (loading ? "disabled" : "")} aria-disabled={(loading ? "true" : "false")} style={{ width: "150px" }}
                                     onClick={async (e) => {
                                         e.preventDefault();
+                                        // Start feedback loading on connec button
                                         setLoading(true);
-                                        setFeedback(undefined);
+                                        setFeedback(undefined); // Reset feedback message
                                         try {
                                             // User data
                                             const { data: { session }, error } = await supabase.auth.getSession();
@@ -255,6 +367,7 @@ function Settings() {
                                             if (error) {
                                                 window.api.showError("Session loading failed, please make sure you are logged in.")
                                             }
+
                                             const response = await fetch(PLAIDLINK, {
                                                 method: "POST",
                                                 headers: {
@@ -265,6 +378,7 @@ function Settings() {
                                                 })
                                             });
 
+                                            // Send feedback message if is not ok
                                             switch (response.status) {
                                                 case 401:
                                                     setFeedback({
@@ -284,20 +398,25 @@ function Settings() {
                                                     break;
                                             }
                                             if (response.ok) {
+                                                // responste data
                                                 const data = await response.json();
 
+                                                // Use the lin_token from response to get the public token
                                                 const handler = Plaid.create({
                                                     token: data.link_token,
                                                     onSuccess: async (public_token, _metadata) => {
 
+                                                        // Send a feedback message
                                                         setFeedback({
                                                             class: "text-info-emphasis",
                                                             message: 'Almost there...'
                                                         });
 
+                                                        // Exchange public token for access_token
                                                         const bankData: { institution_id, institution_name } =
                                                             await exchangePublicToken(token, public_token);
 
+                                                        // Insert Bank id and name to the banks database
                                                         await window.api.Utils(
                                                             `
                                                         INSERT INTO banks (id, institution_name)
@@ -307,12 +426,22 @@ function Settings() {
                                                         `,
                                                             [bankData.institution_id, bankData.institution_name]);
 
+                                                        // Refresh list of banks
                                                         setRefresh(!refresh);
+                                                        // Stop connect loading
                                                         setLoading(false);
+                                                        // Reset feedback message
                                                         setFeedback(undefined);
+
+                                                        // Start feedback loading on refresh all button
+                                                        setRefreshLoading({ index: -1 })
+                                                        // RefreshAll
+                                                        await transactionsRefreshaAll();
+                                                        // Stop loading refresh all button
+                                                        setRefreshLoading(undefined);
                                                     },
                                                     onExit: async (err, metadata) => {
-                                                        window.api.showError(`Something has gone wrong. Exited early.\nError code: 1.0v012`);
+                                                        setLoading(false);
                                                         console.error(err, metadata)
                                                     }
                                                 });
@@ -329,11 +458,26 @@ function Settings() {
                                         <span className="visually-hidden">Loading...</span>
                                     </div>}
                                 </a>
-                                <a href="#" className="btn btn-outline-secondary" style={{ width: "100px" }}
+
+                                <a href="#" className={"btn btn-outline-secondary " + (refreshLoading?.index == -1 ? "disabled" : "")}
+                                    aria-disabled={(refreshLoading?.index == -1 ? "true" : "false")} style={{ width: "150px" }}
                                     onClick={async (e) => {
                                         e.preventDefault();
+                                        // Starting feedback loading
+                                        setRefreshLoading({ index: -1 })
+
+                                        // RefreshAll
+                                        await transactionsRefreshaAll();
+
+                                        // Stop loading
+                                        setRefreshLoading(undefined);
+                                        setRefresh(!refresh);
                                     }}>
                                     Refresh All
+
+                                    {(refreshLoading?.index == -1) && <div className="ms-2 spinner-grow spinner-grow-sm" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>}
                                 </a>
 
 
@@ -341,19 +485,21 @@ function Settings() {
                         </div>
 
 
-                        {banks?.map((values: { id: string, institution_name: string, cursor }, index) => {
+                        {banks?.map((values: BANK, index) => {
                             return (<div key={index} className="border border-2 rounded d-flex flex-column gap-2" style={{ height: "120px", width: "360px", marginTop: "50px" }}>
                                 <h5 className="mt-3 ms-4">{values.institution_name}</h5>
 
                                 <div className="m-auto d-inline-flex gap-4">
-                                    <a href="#" className="btn btn-outline-secondary" style={{ width: "200px" }}
+                                    <a href="#" className={"btn btn-outline-secondary " + (refreshLoading?.index == index ? "disabled" : "")}
+                                        aria-disabled={(refreshLoading?.index == index ? "true" : "false")} style={{ width: "200px" }}
                                         onClick={async (e) => {
                                             e.preventDefault();
                                             // Start loading feedback and refresh
                                             setRefreshLoading({ index })
-                                            await TransactionsRefresh(values.id, values.cursor ?? null, values.institution_name);
+                                            await transactionsRefresh(values.id, values.cursor ?? null, values.institution_name);
                                             // Stop loading
                                             setRefreshLoading(undefined);
+                                            setRefresh(!refresh);
                                         }}>
                                         Refresh
                                         {(index == refreshLoading?.index) && <div className="ms-2 spinner-grow spinner-grow-sm" role="status">
@@ -364,6 +510,7 @@ function Settings() {
                                         onClick={async (e) => {
                                             e.preventDefault();
 
+                                            // Delete bank from banks
                                             await window.api.Utils(
                                                 `DELETE FROM banks WHERE id = ?;`,
                                                 [values.id]
