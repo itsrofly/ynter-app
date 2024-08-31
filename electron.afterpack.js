@@ -1,6 +1,7 @@
 //https://www.electron.build/configuration/configuration#afterpack
 exports.default = async function(context) {
-	//console.log(context)
+	console.log(context)
+	/* Remove all locales
 	var fs = require('fs');
 	var localeDir = context.appOutDir+'/locales/';
 
@@ -13,5 +14,5 @@ exports.default = async function(context) {
 				fs.unlinkSync(localeDir+files[i]);
 			}
 		}
-	});
+	});*/
 }
