@@ -479,8 +479,6 @@ function Settings() {
                                         <span className="visually-hidden">Loading...</span>
                                     </div>}
                                 </a>*/}
-
-
                             </div>
                         </div>
 
