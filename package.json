@@ -1,9 +1,9 @@
 {
   "name": "ynter",
   "version": "1.0.0",
-  "description": "Ynter App Project",
+  "description": "Ynter App",
   "main": "./out/main/index.js",
-  "author": "https://ynter.co (Rofly António)",
+  "author": "RJMA SOFTWARES.",
   "license": "UNLICENSED",
   "private": true,
   "homepage": "./",
@@ -93,7 +93,7 @@
       "!**/fonts/*"
     ],
     "win": {
-      "executableName": "ynter",
+      "executableName": "Ynter",
       "target": [
         {
           "target": "nsis",
@@ -110,7 +110,8 @@
       "allowToChangeInstallationDirectory": true,
       "artifactName": "${name}-${version}-${arch}.${ext}",
       "shortcutName": "${productName}",
-      "createDesktopShortcut": "always"
+      "createDesktopShortcut": "always",
+      "uninstallDisplayName": "unins000"
     },
     "mac": {
       "entitlementsInherit": "build/entitlements.mac.plist",

@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 
 // Components
-import { RevenueCategory } from "../revenue";
 import NewReceipt from "../../components/receipt";
 import {
   abbreviateString,
