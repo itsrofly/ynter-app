@@ -353,7 +353,7 @@ function Settings() {
                             {feedback && <h6 className={"ms-4 " + feedback.class}>{feedback.message}</h6>}
 
                             <div className="m-auto d-inline-flex gap-4">
-                                <a href="#" className={"btn btn-outline-primary " + (loading ? "disabled" : "")} aria-disabled={(loading ? "true" : "false")} style={{ width: "150px" }}
+                                <a href="#" className={"btn btn-outline-primary " + (loading ? "disabled" : "")} aria-disabled={(loading ? "true" : "false")} style={{ width: "200px" }}
                                     onClick={async (e) => {
                                         e.preventDefault();
                                         // Start feedback loading on connec button
@@ -458,7 +458,7 @@ function Settings() {
                                         <span className="visually-hidden">Loading...</span>
                                     </div>}
                                 </a>
-
+                                {/* 
                                 <a href="#" className={"btn btn-outline-secondary " + (refreshLoading?.index == -1 ? "disabled" : "")}
                                     aria-disabled={(refreshLoading?.index == -1 ? "true" : "false")} style={{ width: "150px" }}
                                     onClick={async (e) => {
@@ -478,7 +478,7 @@ function Settings() {
                                     {(refreshLoading?.index == -1) && <div className="ms-2 spinner-grow spinner-grow-sm" role="status">
                                         <span className="visually-hidden">Loading...</span>
                                     </div>}
-                                </a>
+                                </a>*/}
 
 
                             </div>
