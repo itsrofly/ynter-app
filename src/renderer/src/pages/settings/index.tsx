@@ -7,6 +7,7 @@ const WEBSITE = import.meta.env.VITE_WEBSITE;
 const PLAIDLINK = import.meta.env.VITE_PLAIDLINK_API;
 const PLAIDEXCHANGE = import.meta.env.VITE_PLAIDEXCHANGE_API;
 const PLAIDTRANSACTIONS = import.meta.env.VITE_PLAIDTRANSACTIONS;
+const PLAIDDELETE = import.meta.env.VITE_PLAIDDELETE;
 declare const Plaid: any;
 
 interface PLAIDRECEIPT {
@@ -27,7 +28,15 @@ interface BANK {
     cursor
 }
 
-async function exchangePublicToken(token, public_token) {
+async function exchangePublicToken(public_token) {
+    // User data
+    const { data: { session }, error } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (error) {
+        window.api.showError("Session loading failed, please make sure you are logged in.")
+    }
+
     const response = await fetch(PLAIDEXCHANGE, {
         method: "POST",
         headers: {
@@ -42,6 +51,80 @@ async function exchangePublicToken(token, public_token) {
         const data = await response.json();
         return data;
     }
+}
+
+async function createLinkToken(setFeedback, index: number, institution_id?: string,) {
+    // User data
+    const { data: { session }, error } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (error) {
+        window.api.showError("Session loading failed, please make sure you are logged in.")
+    }
+
+    const response = await fetch(PLAIDLINK, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token,
+            institution_id: institution_id
+        })
+    });
+
+    // Send feedback message if is not ok
+    switch (response.status) {
+        case 401:
+            setFeedback({
+                class: "text-danger",
+                message: "Please make sure you're logged in.",
+                index
+            });
+            break;
+        case 402:
+            setFeedback({
+                class: "text-warning",
+                message: 'Ynter Premium Required.',
+                index
+            });
+            break;
+        case 429:
+            setFeedback({
+                class: "text-danger",
+                message: 'Too many operations. Please try again later.',
+                index
+            });
+            break;
+        case 500:
+            window.api.showError("Something has gone wrong. Please report the error.\nError code: 1.0v013");
+            console.error(response);
+            break;
+    }
+    return response;
+}
+
+async function deleteLinkToken(institution_id?: string,) {
+    // User data
+    const { data: { session }, error } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (error) {
+        window.api.showError("Session loading failed, please make sure you are logged in.")
+    }
+
+    const response = await fetch(PLAIDDELETE, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token,
+            institution_id: institution_id
+        })
+    });
+
+    return response;
 }
 
 async function fetchBanks() {
@@ -250,14 +333,24 @@ function Settings() {
     const [loading, setLoading] = useState(false);
     const [refreshLoading, setRefreshLoading] = useState<undefined | { index: number }>();
     const [feedback, setFeedback] = useState<{
-        class: "text-danger" | "text-warning" | "text-info-emphasis"
+        class: "text-danger" | "text-warning" | "text-info-emphasis" | "text-dark"
         message: string
+        index: number
     }>()
 
     useEffect(() => {
         // Get a list of notes using filter and sort
         const getBanks = async () => {
-            setBanks(await fetchBanks());
+            const data = await fetchBanks();
+
+            if (data.length >= 5) {
+                setFeedback({
+                    class: "text-dark",
+                    message: "Reached the limit on the number of banks",
+                    index: -1
+                })
+            }
+            setBanks(data);
         }
         getBanks();
     }, [refresh])
@@ -350,53 +443,18 @@ function Settings() {
                         <div className="border border-2 rounded d-flex flex-column gap-2" style={{ height: "160px", width: "360px", marginTop: "50px" }}>
                             <h5 className="mt-4 ms-4">Bank connections</h5>
 
-                            {feedback && <h6 className={"ms-4 " + feedback.class}>{feedback.message}</h6>}
+                            {feedback && <h6 className={"ms-4 " + feedback.class}>{feedback.index == -1 && feedback.message}</h6>}
 
                             <div className="m-auto d-inline-flex gap-4">
-                                <a href="#" className={"btn btn-outline-primary " + (loading ? "disabled" : "")} aria-disabled={(loading ? "true" : "false")} style={{ width: "200px" }}
+                                <a href="#" className={"btn btn-outline-primary " + ((loading || banks.length >= 5) ? "disabled" : "")} aria-disabled={((loading || banks.length >= 5) ? "true" : "false")} style={{ width: "200px" }}
                                     onClick={async (e) => {
                                         e.preventDefault();
                                         // Start feedback loading on connec button
                                         setLoading(true);
                                         setFeedback(undefined); // Reset feedback message
                                         try {
-                                            // User data
-                                            const { data: { session }, error } = await supabase.auth.getSession();
-                                            const token = session?.access_token;
-
-                                            if (error) {
-                                                window.api.showError("Session loading failed, please make sure you are logged in.")
-                                            }
-
-                                            const response = await fetch(PLAIDLINK, {
-                                                method: "POST",
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
-                                                body: JSON.stringify({
-                                                    token
-                                                })
-                                            });
-
-                                            // Send feedback message if is not ok
-                                            switch (response.status) {
-                                                case 401:
-                                                    setFeedback({
-                                                        class: "text-danger",
-                                                        message: "Please make sure you're logged in."
-                                                    });
-                                                    break;
-                                                case 402:
-                                                    setFeedback({
-                                                        class: "text-warning",
-                                                        message: 'Ynter Premium Required.'
-                                                    });
-                                                    break;
-                                                case 500:
-                                                    window.api.showError("Something has gone wrong. Please report the error.\nError code: 1.0v013");
-                                                    console.error(response);
-                                                    break;
-                                            }
+                                            // Create link token
+                                            const response = await createLinkToken(setFeedback, -1);
                                             if (response.ok) {
                                                 // responste data
                                                 const data = await response.json();
@@ -409,22 +467,23 @@ function Settings() {
                                                         // Send a feedback message
                                                         setFeedback({
                                                             class: "text-info-emphasis",
-                                                            message: 'Almost there...'
+                                                            message: 'Almost there...',
+                                                            index: -1
                                                         });
 
                                                         // Exchange public token for access_token
                                                         const bankData: { institution_id, institution_name } =
-                                                            await exchangePublicToken(token, public_token);
+                                                            await exchangePublicToken(public_token);
 
-                                                        // Insert Bank id and name to the banks database
-                                                        await window.api.Utils(
-                                                            `
-                                                        INSERT INTO banks (id, institution_name)
-                                                        VALUES (?, ?)
-                                                        ON CONFLICT(id) DO UPDATE SET 
-                                                            institution_name = excluded.institution_name;
-                                                        `,
-                                                            [bankData.institution_id, bankData.institution_name]);
+                                                        if (bankData) // Insert Bank id and name to the banks database
+                                                            await window.api.Utils(
+                                                                `
+                                                                INSERT INTO banks (id, institution_name)
+                                                                VALUES (?, ?)
+                                                                ON CONFLICT(id) DO UPDATE SET 
+                                                                    institution_name = excluded.institution_name;
+                                                                `,
+                                                                [bankData.institution_id, bankData.institution_name]);
 
                                                         // Refresh list of banks
                                                         setRefresh(!refresh);
@@ -448,7 +507,9 @@ function Settings() {
                                                 handler.open();
                                             } else
                                                 setLoading(false);
+                                            setRefreshLoading(undefined);
                                         } catch (error) {
+                                            setRefreshLoading(undefined);
                                             window.api.showError(`Something has gone wrong. Please report the error.\nError code: 1.0v014`);
                                             console.error(error)
                                         }
@@ -484,12 +545,19 @@ function Settings() {
 
 
                         {banks?.map((values: BANK, index) => {
-                            return (<div key={index} className="border border-2 rounded d-flex flex-column gap-2" style={{ height: "120px", width: "360px", marginTop: "50px" }}>
+                            return (<div key={index} className="border border-2 rounded d-flex flex-column gap-2" style={{ height: "150px", width: "380px", marginTop: "50px" }}>
                                 <h5 className="mt-3 ms-4">{values.institution_name}</h5>
+                                {feedback && <h6 className={"ms-4 " + feedback.class}>{feedback.index == index && feedback.message}</h6>}
+
+                                {(index == refreshLoading?.index) && <div className="progress ms-auto me-auto" role="progressbar" aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}
+                                    style={{ height: "4px", width: "90%" }}>
+                                    <div className="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+                                </div>}
+
 
                                 <div className="m-auto d-inline-flex gap-4">
                                     <a href="#" className={"btn btn-outline-secondary " + (refreshLoading?.index == index ? "disabled" : "")}
-                                        aria-disabled={(refreshLoading?.index == index ? "true" : "false")} style={{ width: "200px" }}
+                                        aria-disabled={(refreshLoading?.index == index ? "true" : "false")} style={{ width: "100px" }}
                                         onClick={async (e) => {
                                             e.preventDefault();
                                             // Start loading feedback and refresh
@@ -500,20 +568,73 @@ function Settings() {
                                             setRefresh(!refresh);
                                         }}>
                                         Refresh
-                                        {(index == refreshLoading?.index) && <div className="ms-2 spinner-grow spinner-grow-sm" role="status">
-                                            <span className="visually-hidden">Loading...</span>
-                                        </div>}
                                     </a>
-                                    <a href="#" className="btn btn-outline-danger" style={{ width: "100px" }}
+
+                                    <a href="#" className={"btn btn-outline-primary " + (refreshLoading?.index == index ? "disabled" : "")}
+                                        aria-disabled={(refreshLoading?.index == index ? "true" : "false")} style={{ width: "100px" }}
                                         onClick={async (e) => {
                                             e.preventDefault();
+                                            // Start loading feedback and refresh
+                                            setRefreshLoading({ index })
+                                            try {
+                                                // Manage token
+                                                const response = await createLinkToken(setFeedback, index, values.id);
 
-                                            // Delete bank from banks
-                                            await window.api.Utils(
-                                                `DELETE FROM banks WHERE id = ?;`,
-                                                [values.id]
-                                            );
-                                            setRefresh(!refresh);
+                                                if (response.ok) {
+                                                    // responste data
+                                                    const data = await response.json();
+
+                                                    // Use the lin_token from response to get the public token
+                                                    const handler = Plaid.create({
+                                                        token: data.link_token,
+                                                        onSuccess: async (_public_token, _metadata) => {
+                                                            // Stop loading
+                                                            setRefreshLoading(undefined);
+                                                            setRefresh(!refresh);
+                                                        },
+                                                        onExit: async (err, metadata) => {
+                                                            console.error(err, metadata)
+                                                            setRefreshLoading(undefined);
+                                                            setRefresh(!refresh);
+                                                        }
+                                                    });
+                                                    handler.open();
+                                                }
+                                                setRefreshLoading(undefined);
+                                            } catch (error) {
+                                                setRefreshLoading(undefined);
+                                                window.api.showError(`Something has gone wrong. Please report the error.\nError code: 1.0v016`);
+                                                console.error(error)
+                                            }
+                                        }}>
+                                        Manage
+                                    </a>
+
+                                    <a href="#" className={"btn btn-outline-danger " + (refreshLoading?.index == index ? "disabled" : "")}
+                                        aria-disabled={(refreshLoading?.index == index ? "true" : "false")} style={{ width: "100px" }}
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            setRefreshLoading({ index })
+                                            try {
+
+                                                const respose = await deleteLinkToken(values.id);
+
+                                                if (respose.ok) {
+                                                    // Delete bank from banks
+                                                    await window.api.Utils(
+                                                        `DELETE FROM banks WHERE id = ?;`,
+                                                        [values.id]
+                                                    );
+                                                    setRefresh(!refresh);
+                                                    setFeedback(undefined);
+                                                } else
+                                                    window.api.showError(`Something has gone wrong. Please try again later.`);
+                                                setRefreshLoading(undefined);
+                                            } catch (error) {
+                                                setRefreshLoading(undefined);
+                                                window.api.showError(`Something has gone wrong. Please report the error.\nError code: 1.0v017`);
+                                                console.log(error);
+                                            }
                                         }}>
                                         Delete
                                     </a>
