@@ -327,7 +327,7 @@ function Notes() {
                             // Editor data
                             const outputData = await editorInstance.current.save();
                             // Now we update the database
-                            await handleUpdateData(id, JSON.stringify(outputData));
+                            handleUpdateData(id, JSON.stringify(outputData));
                         }
                     },
                 });

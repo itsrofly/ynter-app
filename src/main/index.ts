@@ -12,6 +12,40 @@ const XLSX = require('xlsx');
 
 let mainWindow
 
+
+
+function getFilesizeInMb(filename) {
+  var stats = statSync(filename);
+  var fileSizeInMb = stats.size;
+  return fileSizeInMb / (1024 * 1024);
+}
+
+function generateRandomString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}
+
+function UpsertKeyValue(obj, keyToChange, value) {
+  const keyToChangeLower = keyToChange.toLowerCase();
+  for (const key of Object.keys(obj)) {
+    if (key.toLowerCase() === keyToChangeLower) {
+      // Reassign old key
+      obj[key] = value;
+      // Done
+      return;
+    }
+  }
+  // Insert at end instead
+  obj[keyToChange] = value;
+}
+
 (async () => {
   Sentry.init({
     dsn: "https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312",
@@ -29,23 +63,6 @@ if (process.defaultApp) {
 
 const gotTheLock = app.requestSingleInstanceLock()
 
-function getFilesizeInMb(filename) {
-  var stats = statSync(filename);
-  var fileSizeInMb = stats.size;
-  return fileSizeInMb / (1024*1024);
-}
-
-function generateRandomString(length) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const charactersLength = characters.length;
-
-  for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-
-  return result;
-}
 
 function createWindow(): void {
   // Create the browser window.
@@ -58,8 +75,9 @@ function createWindow(): void {
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      webSecurity: false,
+      nodeIntegration: true,
+      contextIsolation: true,
+      webSecurity: true,
       devTools: !app.isPackaged,
     },
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -74,6 +92,15 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // This is need for not disabling websecurity
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    (details, callback) => {
+      const { responseHeaders } = details;
+      UpsertKeyValue(responseHeaders, 'Access-Control-Allow-Origin', ['*']);
+      UpsertKeyValue(responseHeaders, 'Access-Control-Allow-Headers', ['*']);
+      callback({ responseHeaders });
+    },
+  );
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -131,7 +158,7 @@ if (!gotTheLock) {
           properties: ['openFile'], filters: [
             { name: "PDF & Excel", extensions: ["pdf", "xls", "xlsx", "csv"] }]
         })
-  
+
         if (!(result.canceled)) {
           // file path
           const file = result.filePaths[0];
@@ -141,7 +168,7 @@ if (!gotTheLock) {
             dialog.showErrorBox("Try again", "Couldn't add the file, it's too large.\nMax size is 10mb.");
             return;
           }
-  
+
           // Check if is pdf or excel file
           const isPdf = file.endsWith(".pdf");
           if (isPdf) {
@@ -149,20 +176,20 @@ if (!gotTheLock) {
             const dataBuffer = readFileSync(file);
             // Use pdf-parse to get all pdf text
             const data = await pdf(dataBuffer)
-            return {filename: path.basename(file), data: data.text};
+            return { filename: path.basename(file), data: data.text };
           }
-  
+
           // Means that is excel file
           const workbook = XLSX.readFile(file);
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const json = XLSX.utils.sheet_to_json(sheet);
-          
-          return {filename: path.basename(file), data: JSON.stringify(json)};
+
+          return { filename: path.basename(file), data: JSON.stringify(json) };
         }
         return;
       } catch (error) {
-       return; 
+        return;
       }
     });
 
@@ -170,21 +197,21 @@ if (!gotTheLock) {
       try {
         if (!file)
           return "";
-          const filename = generateRandomString(5);
-          const destinationPath = path.join(app.getPath("userData"), filename + path.extname(file));
+        const filename = generateRandomString(5);
+        const destinationPath = path.join(app.getPath("userData"), filename + path.extname(file));
 
-          await Promise.all([copyFile(file, destinationPath)]);
-          
-          return destinationPath;
+        await Promise.all([copyFile(file, destinationPath)]);
+
+        return destinationPath;
       } catch (error) {
-       throw error; 
+        throw error;
       }
     });
 
     ipcMain.handle("Show:getFile", async (_ev) => {
       try {
         const result = await dialog.showOpenDialog({})
-  
+
         if (!(result.canceled)) {
           // file path
           const file = result.filePaths[0];
@@ -192,18 +219,18 @@ if (!gotTheLock) {
           const filename = path.basename(file);
 
           // Retur name path and size
-          return {filename, file, filesize};
+          return { filename, file, filesize };
         }
         return;
       } catch (error) {
-       throw error; 
+        throw error;
       }
     });
 
     ipcMain.handle("Show:savefile", async (_ev, file) => {
       try {
         const result = await dialog.showSaveDialog({})
-  
+
         if (!(result.canceled)) {
           // file path
           const destinationPath = result.filePath + path.extname(file);
@@ -211,7 +238,7 @@ if (!gotTheLock) {
         }
         return;
       } catch (error) {
-       return; 
+        return;
       }
     });
 
@@ -220,11 +247,11 @@ if (!gotTheLock) {
         return;
       unlink(file, (err) => {
         if (err) {
-            console.error('Error deleting the file:', err);
+          console.error('Error deleting the file:', err);
         } else {
-            console.log('File deleted successfully');
+          console.log('File deleted successfully');
         }
-    });
+      });
     })
 
     createWindow()

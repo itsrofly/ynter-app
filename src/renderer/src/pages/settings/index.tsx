@@ -510,6 +510,7 @@ function Settings() {
                                             setRefreshLoading(undefined);
                                         } catch (error) {
                                             setRefreshLoading(undefined);
+                                            setLoading(false);
                                             window.api.showError(`Something has gone wrong. Please report the error.\nError code: 1.0v014`);
                                             console.error(error)
                                         }
