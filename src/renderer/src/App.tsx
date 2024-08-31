@@ -9,7 +9,7 @@ import Dashboard from "./pages/dashboard";
 import Expenses from "./pages/expenses";
 import Notes from "./pages/notes";
 import Revenue from "./pages/revenue";
-import Settings from "./pages/settings";
+import Settings, { transactionsRefreshaAll } from "./pages/settings";
 import { updateRecurring } from "./components/support";
 
 // Auth
@@ -48,7 +48,7 @@ async function finish_load() {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
-    const { error, data: {session} } = await supabase.auth.getSession();
+    const { data: {session} } = await supabase.auth.getSession();
 
     if (!session) {
       // remove if error
@@ -59,6 +59,9 @@ async function finish_load() {
     // Update all recurring receipts
     await updateRecurring("revenue");
     await updateRecurring("expense");
+
+    transactionsRefreshaAll();
+
     // Update Login Session
     window.onUpdateSession(async (value: string) => {
       // Get session using code
