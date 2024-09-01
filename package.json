@@ -17,8 +17,8 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "minify:win": "powershell -Command \"Get-ChildItem -Path '.\\out' -Recurse -File | Where-Object { $_.Name -like '*js*' -and $_.Name -notlike '*jsc*' -and $_.Name -notlike '*map*' } | ForEach-Object { uglifyjs $_.FullName -o $_.FullName -c }\"",
-    "minify": "find ./out -type f -name '*.js' ! -name '*jsc*' ! -name '*map*' -exec uglifyjs {} -o {} -c \\;",
+    "minify:win": "powershell -Command \"Get-ChildItem -Path '.\\out' -Recurse -File | Where-Object { $_.Name -like '*js*' -and $_.Name -notlike '*jsc*' -and $_.Name -notlike '*map*' } | ForEach-Object { uglifyjs $_.FullName -o $_.FullName -c --toplevel --v8 }\"",
+    "minify": "find ./out -type f -name '*.js' ! -name '*jsc*' ! -name '*map*' -exec uglifyjs {} -o {} -c --toplevel --v8 \\;",
     "build:unpack": "modclean --run --patterns=default:safe && npm run build && electron-builder --dir",
     "build:win:cross": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win --linux tar.xz",
     "build:win": "modclean --run --patterns=default:safe && npm run build && npm run minify:win && electron-builder --win",
@@ -152,7 +152,6 @@
     },
     "electronDownload": {
       "mirror": "https://npmmirror.com/mirrors/electron/"
-    },
-    "afterPack": "./electron.afterpack.js"
+    }
   }
 }

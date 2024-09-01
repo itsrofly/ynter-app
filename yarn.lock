@@ -589,6 +589,14 @@
   resolved "https://registry.npmjs.org/@jridgewell/set-array/-/set-array-1.2.1.tgz"
   integrity sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==
 
+"@jridgewell/source-map@^0.3.3":
+  version "0.3.6"
+  resolved "https://registry.npmjs.org/@jridgewell/source-map/-/source-map-0.3.6.tgz"
+  integrity sha512-1ZJTZebgqllO79ue2bm3rIGud/bOe0pP5BjSRCRxxYkEZS8STV7zN84UBbiYu7jy+eCKSnVIUgoWWE/tt+shMQ==
+  dependencies:
+    "@jridgewell/gen-mapping" "^0.3.5"
+    "@jridgewell/trace-mapping" "^0.3.25"
+
 "@jridgewell/sourcemap-codec@^1.4.10", "@jridgewell/sourcemap-codec@^1.4.14", "@jridgewell/sourcemap-codec@^1.4.15", "@jridgewell/sourcemap-codec@^1.5.0":
   version "1.5.0"
   resolved "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.0.tgz"
@@ -2301,6 +2309,11 @@ commander@^10.0.0:
   version "10.0.1"
   resolved "https://registry.npmjs.org/commander/-/commander-10.0.1.tgz"
   integrity sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==
+
+commander@^2.20.0:
+  version "2.20.3"
+  resolved "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz"
+  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
 commander@^5.0.0:
   version "5.1.0"
@@ -5412,7 +5425,7 @@ source-map-js@^1.2.0:
   resolved "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.0.tgz"
   integrity sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==
 
-source-map-support@^0.5.19:
+source-map-support@^0.5.19, source-map-support@~0.5.20:
   version "0.5.21"
   resolved "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.21.tgz"
   integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==
@@ -5669,6 +5682,16 @@ temp-file@^3.4.0:
   dependencies:
     async-exit-hook "^2.0.1"
     fs-extra "^10.0.0"
+
+terser@^5.4.0:
+  version "5.31.6"
+  resolved "https://registry.npmjs.org/terser/-/terser-5.31.6.tgz"
+  integrity sha512-PQ4DAriWzKj+qgehQ7LK5bQqCFNMmlhjR2PFFLuqGCpuCAauxemVBWwWOxo3UIwWQx8+Pr61Df++r76wDmkQBg==
+  dependencies:
+    "@jridgewell/source-map" "^0.3.3"
+    acorn "^8.8.2"
+    commander "^2.20.0"
+    source-map-support "~0.5.20"
 
 text-table@^0.2.0:
   version "0.2.0"

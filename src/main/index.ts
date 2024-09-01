@@ -72,6 +72,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: true,
       contextIsolation: true,
+      sandbox: false, //  if you want to use bytecode to protect preload scripts
       webSecurity: true,
       devTools: !app.isPackaged
     },
