@@ -3,15 +3,28 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  Database: (query: string, params?: any[]) => ipcRenderer.invoke('Database:open', query, params),
-  Utils: (query: string, params?: any[]) => ipcRenderer.invoke('Utils:open', query, params),
-  showError: (content: string) => ipcRenderer.invoke("Show:error", "Try again", content),
-  showOpenFile: () => ipcRenderer.invoke("Show:openfile"),
-  showCopyFile: (file: string) => ipcRenderer.invoke("Show:copyFile", file),
-  showGetFile: () => ipcRenderer.invoke("Show:getFile"),
-  ShowSavefile: (file: string) => ipcRenderer.invoke("Show:savefile", file),
-  DeleteFile: (file: string) => ipcRenderer.invoke("Delete:file", file),
-  Server: () => ipcRenderer.invoke("Server:start")
+  // Ynter Database
+  Database: (query: string, params?: string | number[]): Promise<[]> =>
+    ipcRenderer.invoke('Database:open', query, params),
+  // Utils Database
+  Utils: (query: string, params?: string | number[]): Promise<[]> =>
+    ipcRenderer.invoke('Utils:open', query, params),
+  // Show Error
+  showError: (content: string): Promise<void> =>
+    ipcRenderer.invoke('Show:error', 'Try again', content),
+  // Open File,  see main
+  showOpenFile: (): Promise<{ filename: string; data: string } | undefined> =>
+    ipcRenderer.invoke('Show:openfile'),
+  // Copy file, see main
+  showCopyFile: (file: string): Promise<string | undefined> =>
+    ipcRenderer.invoke('Show:copyFile', file),
+  // Get file,  see main
+  showGetFile: (): Promise<{ filename: string; file: string; filesize: number }> =>
+    ipcRenderer.invoke('Show:getFile'),
+  // Save file, see main
+  ShowSavefile: (file: string): Promise<void> => ipcRenderer.invoke('Show:savefile', file),
+  DeleteFile: (file: string): Promise<void> => ipcRenderer.invoke('Delete:file', file),
+  Server: (): Promise<string | undefined> => ipcRenderer.invoke('Server:start')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -20,8 +33,9 @@ const api = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('api', api)
-    contextBridge.exposeInMainWorld("openExternal", shell.openExternal)
-    contextBridge.exposeInMainWorld('onUpdateSession', (callback) => ipcRenderer.on('update-session', (_event, value) => callback(value))
+    contextBridge.exposeInMainWorld('openExternal', shell.openExternal)
+    contextBridge.exposeInMainWorld('onUpdateSession', (callback) =>
+      ipcRenderer.on('update-session', (_event, value) => callback(value))
     )
   } catch (error) {
     console.error(error)
@@ -32,5 +46,6 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.openExternal = shell.openExternal
   // @ts-ignore (define in dts)
-  window.onUpdateSession = (callback) => ipcRenderer.on('update-session', (_event, value) => callback(value))
+  window.onUpdateSession = (callback): callback =>
+    ipcRenderer.on('update-session', (_event, value) => callback(value))
 }

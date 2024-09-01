@@ -46,6 +46,7 @@
     "@sentry/vite-plugin": "^2.22.2",
     "@sotaproject/strikethrough": "^1.0.1",
     "@supabase/supabase-js": "^2.45.1",
+    "custom-electron-titlebar": "^4.2.8",
     "dayjs": "^1.11.12",
     "dompurify": "^3.1.6",
     "knex": "^3.1.0",
