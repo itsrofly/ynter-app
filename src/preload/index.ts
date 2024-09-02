@@ -1,8 +1,11 @@
 import { contextBridge, ipcRenderer, shell } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+
 // Custom APIs for renderer
 const api = {
+  DeleteFile: (file: string): Promise<void> => ipcRenderer.invoke('Delete:file', file),
+  Server: (): Promise<string | undefined> => ipcRenderer.invoke('Server:start'),
   // Ynter Database
   Database: (query: string, params?: string | number[]): Promise<[]> =>
     ipcRenderer.invoke('Database:open', query, params),
@@ -21,10 +24,9 @@ const api = {
   // Get file,  see main
   showGetFile: (): Promise<{ filename: string; file: string; filesize: number }> =>
     ipcRenderer.invoke('Show:getFile'),
+  sendPinCode: (pin: string) => ipcRenderer.invoke('pin-code-check', pin),
   // Save file, see main
-  ShowSavefile: (file: string): Promise<void> => ipcRenderer.invoke('Show:savefile', file),
-  DeleteFile: (file: string): Promise<void> => ipcRenderer.invoke('Delete:file', file),
-  Server: (): Promise<string | undefined> => ipcRenderer.invoke('Server:start')
+  showSavefile: (file: string): Promise<void> => ipcRenderer.invoke('Show:savefile', file)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -49,3 +51,67 @@ if (process.contextIsolated) {
   window.onUpdateSession = (callback): callback =>
     ipcRenderer.on('update-session', (_event, value) => callback(value))
 }
+
+// Used to lock display
+function lockDisplay() {
+  // Add blur
+  let blurbg = document.getElementById('blurbg')
+  if (blurbg) {
+    blurbg.style.filter = 'blur(15px)'
+    blurbg.style.cursor = 'not-allowed'
+  }
+
+  // Add modal
+  const modal = document.getElementById('loginmodal')
+  if (modal) modal.style.display = 'block'
+
+  // Disable interactivity
+  const grid = document.getElementById('grid-container')
+  if (grid) {
+    grid.style.pointerEvents = 'none'
+  }
+}
+
+// Used to unlock display
+function unlockDisplay() {
+  // Remove blur
+  const blurbg = document.getElementById('blurbg')
+  if (blurbg) blurbg.removeAttribute('style')
+
+  // Remove pin modal
+  const modal = document.getElementById('loginmodal')
+  if (modal) modal.style.display = 'none'
+
+  // Active grid-container
+  const grid = document.getElementById('grid-container')
+  if (grid) grid.style.pointerEvents = 'auto'
+}
+
+
+
+// Pin is good
+ipcRenderer.on('pin-code', (_event, valid) => {
+  if (valid)
+    unlockDisplay();
+  else {
+    // Needs pin
+    lockDisplay();
+
+    // Setup lock timer
+    let inactivityTimer
+    const inactivityTime = 5 * 60 * 1000 // in 10 minutes of inactivity
+
+    function resetTimer() {
+      clearTimeout(inactivityTimer)
+      inactivityTimer = setTimeout(lockDisplay, inactivityTime)
+    }
+
+    // Listen for user activity events
+    window.onload = resetTimer
+    window.onmousemove = resetTimer
+    window.onkeydown = resetTimer
+    window.onkeyup = resetTimer
+    window.onscroll = resetTimer
+
+  }
+})

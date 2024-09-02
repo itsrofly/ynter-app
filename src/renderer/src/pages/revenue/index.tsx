@@ -615,7 +615,7 @@ function Revenue(): JSX.Element {
                                       className="d-flex align-items-start"
                                       style={{ cursor: 'pointer' }}
                                       onClick={async () => {
-                                        window.api.ShowSavefile(rev.file_path)
+                                        window.api.showSavefile(rev.file_path)
                                       }}
                                     >
                                       <a className="icon-link icon-link-hover text-white link-underline-light ">

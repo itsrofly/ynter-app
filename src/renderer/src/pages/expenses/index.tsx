@@ -762,7 +762,7 @@ function Expenses(): JSX.Element {
                                       className="d-flex align-items-start"
                                       style={{ cursor: 'pointer' }}
                                       onClick={async () => {
-                                        window.api.ShowSavefile(exp.file_path)
+                                        window.api.showSavefile(exp.file_path)
                                       }}
                                     >
                                       <a className="icon-link icon-link-hover text-white link-underline-light ">

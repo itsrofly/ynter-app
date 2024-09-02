@@ -428,7 +428,6 @@ function Dashboard(): JSX.Element {
           }
           if (body_data) {
             const message = body_data.choices[0].delta
-
             // If is the end of the chunk
             if (message.finish_reason === 'stop' || message.finish_reason === 'tool_calls') break
 
@@ -454,7 +453,7 @@ function Dashboard(): JSX.Element {
               outputBuffer += message.tool_calls[0].function.arguments
             } else if (message.content) {
               outputBuffer += message.content
-
+   
               // Yield control to avoid blocking the main thread
               await new Promise((resolve) => requestAnimationFrame(resolve))
               // Update state with incremental data

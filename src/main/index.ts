@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, safeStorage } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
@@ -6,7 +6,9 @@ import { connection, connectionUtils } from './knex'
 import { callback_server } from './oauth-callback'
 import { readFileSync, statSync, unlink } from 'fs'
 import * as Sentry from '@sentry/electron/main'
-import { copyFile } from 'fs/promises'
+import { copyFile, readFile, writeFile } from 'fs/promises'
+import { existsSync } from 'fs'
+
 const pdf = require('pdf-parse')
 const XLSX = require('xlsx')
 
@@ -44,7 +46,7 @@ function UpsertKeyValue(obj, keyToChange, value): void {
   obj[keyToChange] = value
 }
 
-;(async (): Promise<void> => {
+; (async (): Promise<void> => {
   Sentry.init({
     dsn: 'https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312'
   })
@@ -127,6 +129,14 @@ if (!gotTheLock) {
     // Set app user model id for windows
     electronApp.setAppUserModelId('app.ynter.co')
 
+    // Initial password, Besically no pin is setup
+    const filePath = path.join(app.getPath('userData'), '42');
+    const secretNoPassword = 'no justice, no code';
+    const encryptedData = safeStorage.encryptString(secretNoPassword);
+
+    if (!existsSync(filePath))
+      writeFile(filePath, encryptedData);
+
     //app.commandLine.appendSwitch('lang', 'en-US'); // Set default language
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
@@ -191,6 +201,19 @@ if (!gotTheLock) {
       } catch (error) {
         return
       }
+    })
+
+    ipcMain.handle("pin-code-check", async (_event, value) => {
+      // Read encrypted data from disk
+      const encryptedData = await readFile(path.join(app.getPath('userData'), '42'));
+
+      // Decrypt data
+      const decryptedData = safeStorage.decryptString(encryptedData);
+      
+      if (decryptedData === value)
+        mainWindow.webContents.send("pin-code", true)
+      else
+        mainWindow.webContents.send("pin-code", false)
     })
 
     // Copy file to the appData folder with a random name
@@ -258,7 +281,7 @@ if (!gotTheLock) {
     })
   })
 
-  app.on('open-url', () => {})
+  app.on('open-url', () => { })
 
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits
