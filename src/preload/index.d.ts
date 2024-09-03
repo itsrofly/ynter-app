@@ -8,7 +8,7 @@ declare global {
     api: {
       Session(): Promise<string | undefined>
       googleOauth(): Promise<void>
-      otpSign(): Promise<void>
+      otpSign(email: string): Promise<any>
       Logout(): Promise<void>
       Database(query: string, params?: (string | number | null)[]): Promise<any>
       Utils(query: string, params?: (string | number | null)[]): Promise<any>

@@ -7,7 +7,7 @@ const api = {
   Session: () => ipcRenderer.invoke('User:token'),
   Logout: () => ipcRenderer.invoke('User:logout'),
   googleOauth: () => ipcRenderer.invoke('User:oauth'),
-  otpSign: () => ipcRenderer.invoke('User:otp'),
+  otpSign: (email) => ipcRenderer.invoke('User:otp', email),
   // Ynter Database
   Database: (query: string, params?: string | number[]): Promise<[]> =>
     ipcRenderer.invoke('Database:open', query, params),

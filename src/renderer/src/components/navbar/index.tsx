@@ -282,7 +282,7 @@ export default function Navbar(): JSX.Element {
           e.preventDefault() // Prevent reload
           setLoading(true) // Start loading feedback
 
-          const error = window.api.otpSign()
+          const error = await window.api.otpSign(email)
 
           // Change the bottom message and stop loading
           if (error) {
