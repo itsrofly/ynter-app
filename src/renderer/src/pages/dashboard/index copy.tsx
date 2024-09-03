@@ -17,7 +17,6 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
-import { supabase } from "../../App";
 import { marked } from "marked";
 import DOMPurify from 'dompurify';
 import LoadingProgressStepper from "@renderer/components/stepper";
@@ -365,9 +364,8 @@ function Dashboard() {
 
             try {
                 // Get Session, if invalid send message
-                const { data, error } = await supabase.auth.getSession();
-                if (error) {
-                    console.error(error);
+                const access_token = await window.api.Session()
+                if (!access_token) {
                     chat.current.push({
                         role: "assistant",
                         content: "Something has gone wrong. Make sure you're logged in."
@@ -378,7 +376,7 @@ function Dashboard() {
 
                 // Fetch chat proxy from api
                 const response = await fetch_response(
-                    data.session?.access_token,
+                    access_token,
                     chat.current,
                     true, // In the future stream only when there is no file attach
                     true
@@ -594,7 +592,7 @@ function Dashboard() {
 
                             // Fetch chat proxy from api
                             const response = await fetch_response(
-                                data.session?.access_token,
+                                access_token,
                                 chat.current,
                                 false,
                                 false
@@ -660,7 +658,7 @@ function Dashboard() {
 
                                     // Fetch chat proxy from api
                                     const responseNewBuffer = await fetch_response(
-                                        data.session?.access_token,
+                                        access_token,
                                         chat.current,
                                         false,
                                         false
@@ -709,7 +707,7 @@ function Dashboard() {
 
                                     // Fetch chat proxy from api
                                     const responseNewQuery = await fetch_response(
-                                        data.session?.access_token,
+                                        access_token,
                                         chat.current,
                                         false,
                                         false

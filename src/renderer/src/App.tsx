@@ -12,9 +12,6 @@ import Revenue from './pages/revenue'
 import Settings, { transactionsRefreshaAll } from './pages/settings'
 import { updateRecurring } from './components/support'
 
-// Auth
-import { createClient } from '@supabase/supabase-js'
-
 import * as Sentry from '@sentry/electron/renderer'
 
 // External
@@ -27,17 +24,7 @@ import './layouts.css'
   })
 })()
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 declare const bootstrap
-
-// Supabase create client from oauth
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    flowType: 'pkce'
-  }
-})
 
 async function finish_load(): Promise<void> {
   try {
@@ -56,14 +43,14 @@ async function finish_load(): Promise<void> {
     if is valid then never lock the display
     */
     window.api.sendPinCode('no justice, no code')
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
+    const email = localStorage.getItem('user:email')
+    const access_token = await window.api.Session()
 
-    if (!session) {
+    if (!access_token && email) {
       // remove if error
       localStorage.removeItem('user:email')
       localStorage.removeItem('user:name')
+      window.location.reload()
     }
 
     // Update all recurring receipts
@@ -74,21 +61,10 @@ async function finish_load(): Promise<void> {
     transactionsRefreshaAll()
 
     // Update Login Session
-    window.onUpdateSession(async (value: string) => {
-      // Get session using code
-      const { data, error } = await supabase.auth.exchangeCodeForSession(value)
-
-      if (error) {
-        window.api.showError(
-          `Something has gone wrong. Please report the error.\nError code: 1.0v002`
-        )
-        console.error(error)
-        return
-      }
-
+    window.onUpdateSession(async (name: string, email: string) => {
       // store local the email and username for fast acess
-      localStorage.setItem('user:email', data.user.email ?? '')
-      localStorage.setItem('user:name', data.user.user_metadata.full_name)
+      localStorage.setItem('user:email', email)
+      localStorage.setItem('user:name', name)
       window.location.reload()
     })
   } catch (error) {
@@ -206,9 +182,12 @@ export default function App(): JSX.Element {
           />
         </div>
       </div>
-      <div id="blurbg" style={{filter: 'blur(15px)' }}>
-        <div className="grid-container" id="grid-container" 
-        style={{ backgroundColor: '#fafafa', pointerEvents: 'none' }}>
+      <div id="blurbg" style={{ filter: 'blur(15px)' }}>
+        <div
+          className="grid-container"
+          id="grid-container"
+          style={{ backgroundColor: '#fafafa', pointerEvents: 'none' }}
+        >
           <RouterProvider router={router} />
         </div>
       </div>

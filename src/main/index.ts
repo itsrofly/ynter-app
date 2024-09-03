@@ -6,8 +6,9 @@ import { connection, connectionUtils } from './knex'
 import { callback_server } from './oauth-callback'
 import { readFileSync, statSync, unlink } from 'fs'
 import * as Sentry from '@sentry/electron/main'
-import { copyFile, readFile, writeFile } from 'fs/promises'
+import { copyFile, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
+import { createClient } from '@supabase/supabase-js'
 
 const pdf = require('pdf-parse')
 const XLSX = require('xlsx')
@@ -51,6 +52,18 @@ function UpsertKeyValue(obj, keyToChange, value): void {
     dsn: 'https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312'
   })
 })()
+
+// @ts-ignore
+const supabaseUrl = import.meta.env.MAIN_VITE_SUPABASE_URL
+// @ts-ignore
+const supabaseAnonKey = import.meta.env.MAIN_VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    flowType: 'pkce'
+  }
+})
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -129,13 +142,25 @@ if (!gotTheLock) {
     // Set app user model id for windows
     electronApp.setAppUserModelId('app.ynter.co')
 
-    // Initial password, Besically no pin is setup
-    const filePath = path.join(app.getPath('userData'), '42');
-    const secretNoPassword = 'no justice, no code';
-    const encryptedData = safeStorage.encryptString(secretNoPassword);
+    const userFile = path.join(app.getPath('userData'), 'User.ynter');
+    // Load Session
+    if (existsSync(userFile)) {
+      try {
+        // Read encrypted data from disk
+        const encryptedData = await readFile(userFile);
 
-    if (!existsSync(filePath))
-      writeFile(filePath, encryptedData);
+        // Decrypt data
+        const decryptedData = JSON.parse(safeStorage.decryptString(encryptedData))
+
+        // Load session
+        await supabase.auth.setSession({
+          access_token: decryptedData.access_token,
+          refresh_token: decryptedData.refresh_token
+        })
+      } catch (error) {
+        console.error(error)
+      }
+    }
 
     //app.commandLine.appendSwitch('lang', 'en-US'); // Set default language
     // Default open or close DevTools by F12 in development
@@ -144,9 +169,53 @@ if (!gotTheLock) {
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
+    // Return access_token
+    ipcMain.handle('User:token', async () => {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
+      return session?.access_token
+    })
 
-    // Start callback server event
-    ipcMain.handle('Server:start', callback_server)
+    // Logout user
+    ipcMain.handle('User:logout', async () => {
+      await supabase.auth.signOut()
+    })
+
+    // Login using google oauth
+    ipcMain.handle('User:oauth', async () => {
+      // Create server listener
+      const url = callback_server()
+
+      // Create the auth and set the redirect to the server listener
+      const { data } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'Profile email',
+          skipBrowserRedirect: true,
+          redirectTo: url
+        }
+      })
+
+      // Open url in default url
+      if (data.url) shell.openExternal(data.url)
+    })
+
+    // Login using otp
+    ipcMain.handle('User:otp', async (_ev, email) => {
+      // Create server listener
+      const url = callback_server()
+
+      // Login using supabase Otp
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: url
+        }
+      })
+      return error
+    })
 
     // Open/create/execute database event
     ipcMain.handle('Database:open', connection)
@@ -209,7 +278,7 @@ if (!gotTheLock) {
 
       // Decrypt data
       const decryptedData = safeStorage.decryptString(encryptedData);
-      
+
       if (decryptedData === value)
         mainWindow.webContents.send("pin-code", true)
       else

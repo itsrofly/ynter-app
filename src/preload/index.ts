@@ -1,11 +1,13 @@
-import { contextBridge, ipcRenderer, shell } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 
 // Custom APIs for renderer
 const api = {
-  DeleteFile: (file: string): Promise<void> => ipcRenderer.invoke('Delete:file', file),
-  Server: (): Promise<string | undefined> => ipcRenderer.invoke('Server:start'),
+  Session: () => ipcRenderer.invoke('User:token'),
+  Logout: () => ipcRenderer.invoke('User:logout'),
+  googleOauth: () => ipcRenderer.invoke('User:oauth'),
+  otpSign: () => ipcRenderer.invoke('User:otp'),
   // Ynter Database
   Database: (query: string, params?: string | number[]): Promise<[]> =>
     ipcRenderer.invoke('Database:open', query, params),
@@ -26,7 +28,9 @@ const api = {
     ipcRenderer.invoke('Show:getFile'),
   sendPinCode: (pin: string) => ipcRenderer.invoke('pin-code-check', pin),
   // Save file, see main
-  showSavefile: (file: string): Promise<void> => ipcRenderer.invoke('Show:savefile', file)
+  showSavefile: (file: string): Promise<void> => ipcRenderer.invoke('Show:savefile', file),
+  // Delete file
+  deleteFile: (file: string): Promise<void> => ipcRenderer.invoke('Delete:file', file),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -35,9 +39,8 @@ const api = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('api', api)
-    contextBridge.exposeInMainWorld('openExternal', shell.openExternal)
     contextBridge.exposeInMainWorld('onUpdateSession', (callback) =>
-      ipcRenderer.on('update-session', (_event, value) => callback(value))
+      ipcRenderer.on('update-session', (_event, name, email) => callback(name, email))
     )
   } catch (error) {
     console.error(error)
@@ -46,10 +49,8 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
-  window.openExternal = shell.openExternal
-  // @ts-ignore (define in dts)
   window.onUpdateSession = (callback): callback =>
-    ipcRenderer.on('update-session', (_event, value) => callback(value))
+    ipcRenderer.on('update-session', (_event, name, email) => callback(name, email))
 }
 
 // Used to lock display

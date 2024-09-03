@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import Soon from '../../assets/Comingsoon.svg'
-import { supabase } from '@renderer/App'
 import { PlaidExpenseCategory, PlaidRevenueCategory } from '@renderer/components/plaid'
 
 const WEBSITE = import.meta.env.VITE_WEBSITE
@@ -30,13 +28,8 @@ interface BANK {
 
 async function exchangePublicToken(public_token) {
   // User data
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
-  const token = session?.access_token
- 
-  if (error) {
+  const access_token = await window.api.Session()
+  if (!access_token) {
     window.api.showError('Session loading failed, please make sure you are logged in.')
   }
 
@@ -46,7 +39,7 @@ async function exchangePublicToken(public_token) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      token,
+      token: access_token,
       public_token
     })
   })
@@ -58,13 +51,9 @@ async function exchangePublicToken(public_token) {
 
 async function createLinkToken(setFeedback, index: number, institution_id?: string) {
   // User data
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
-  const token = session?.access_token
-
-  if (error) {
+  const access_token = await window.api.Session()
+  
+  if (!access_token) {
     window.api.showError('Session loading failed, please make sure you are logged in.')
   }
 
@@ -74,7 +63,7 @@ async function createLinkToken(setFeedback, index: number, institution_id?: stri
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      token,
+      token: access_token,
       institution_id: institution_id
     })
   })
@@ -114,13 +103,9 @@ async function createLinkToken(setFeedback, index: number, institution_id?: stri
 
 async function deleteLinkToken(institution_id?: string) {
   // User data
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
-  const token = session?.access_token
+  const access_token = await window.api.Session()
 
-  if (error) {
+  if (!access_token) {
     window.api.showError('Session loading failed, please make sure you are logged in.')
   }
 
@@ -130,7 +115,7 @@ async function deleteLinkToken(institution_id?: string) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      token,
+      token: access_token,
       institution_id: institution_id
     })
   })
@@ -278,12 +263,9 @@ export async function transactionsRefresh(
 
   try {
     // User data
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const access_token = await window.api.Session()
 
-    if (!session) return
+    if (!access_token) return
 
     while (hasMore) {
       const response = await fetch(PLAIDTRANSACTIONS, {
@@ -292,7 +274,7 @@ export async function transactionsRefresh(
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          token,
+          token: access_token,
           institution_id: id,
           cursor: theCursor
         })
@@ -348,6 +330,7 @@ export async function transactionsRefreshaAll() {
 }
 
 function Settings() {
+  const [darkMode, setDarkMode] = useState(false)
   const [selected, setSelected] = useState(0)
   const [banks, setBanks] = useState([])
   const [refresh, setRefresh] = useState(false)
@@ -376,8 +359,76 @@ function Settings() {
     getBanks()
   }, [refresh])
 
+  useEffect(() => {
+    // Native mode is white then
+    setDarkMode(false)
+  }, [])
+
   return (
     <div className="right-content-secondary">
+      <form action="">
+        <div
+          className="modal fade"
+          id="pinmodal"
+          tabIndex={-1}
+          aria-labelledby="pinmodalLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="pinmodalLabel">
+                  PIN
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="input-group flex-nowrap">
+                  <span className="input-group-text" id="addon-wrapping" style={{ width: '60px' }}>
+                    Old
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="4 digits"
+                    aria-label="oldpin"
+                    aria-describedby="addon-wrapping"
+                    maxLength={4}
+                  />
+                </div>
+
+                <div className="input-group flex-nowrap mt-3">
+                  <span className="input-group-text" id="addon-wrapping" style={{ width: '60px' }}>
+                    New
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="4 digits"
+                    aria-label="newpin"
+                    aria-describedby="addon-wrapping"
+                    maxLength={4}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <button type="button" className="btn btn-primary">
+                  Save changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
       <div className="area-first border-end border-top overflow-y-auto">
         <div className="w-100 d-flex p-3 " style={{ height: '63px' }}>
           <h4>Settings</h4>
@@ -430,52 +481,6 @@ function Settings() {
         <div
           className={
             'w-100 border-bottom d-flex align-items-center ps-5' +
-            (selected == 2 ? ' bg-info-subtle' : '')
-          }
-          style={{ height: '40px', cursor: 'pointer' }}
-          onClick={() => {
-            setSelected(2)
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            fill="currentColor"
-            className="bi bi-shield-lock"
-            viewBox="0 0 16 16"
-          >
-            <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56" />
-            <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415" />
-          </svg>
-          <span className="ms-2">Security</span>
-        </div>
-        <div
-          className={
-            'w-100 border-bottom d-flex align-items-center ps-5' +
-            (selected == 3 ? ' bg-info-subtle' : '')
-          }
-          style={{ height: '40px', cursor: 'pointer' }}
-          onClick={() => {
-            setSelected(3)
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            fill="currentColor"
-            className="bi bi-brush-fill"
-            viewBox="0 0 16 16"
-          >
-            <path d="M15.825.12a.5.5 0 0 1 .132.584c-1.53 3.43-4.743 8.17-7.095 10.64a6.1 6.1 0 0 1-2.373 1.534c-.018.227-.06.538-.16.868-.201.659-.667 1.479-1.708 1.74a8.1 8.1 0 0 1-3.078.132 4 4 0 0 1-.562-.135 1.4 1.4 0 0 1-.466-.247.7.7 0 0 1-.204-.288.62.62 0 0 1 .004-.443c.095-.245.316-.38.461-.452.394-.197.625-.453.867-.826.095-.144.184-.297.287-.472l.117-.198c.151-.255.326-.54.546-.848.528-.739 1.201-.925 1.746-.896q.19.012.348.048c.062-.172.142-.38.238-.608.261-.619.658-1.419 1.187-2.069 2.176-2.67 6.18-6.206 9.117-8.104a.5.5 0 0 1 .596.04" />
-          </svg>
-          <span className="ms-2">Appearance</span>
-        </div>
-
-        <div
-          className={
-            'w-100 border-bottom d-flex align-items-center ps-5' +
             (selected == 4 ? ' bg-info-subtle' : '')
           }
           style={{ height: '40px', cursor: 'pointer' }}
@@ -498,10 +503,92 @@ function Settings() {
       </div>
       <div className="area-second border-top overflow-y-auto d-flex flex-column align-items-center">
         {selected > 1 && (
-          <div className="d-flex flex-column align-items-center justify-content-center mt-auto mb-auto">
-            <h4>Coming Soon</h4>
-            <img src={Soon} alt="soon" width={360} height={360} />
-          </div>
+          <>
+            <div
+              className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
+              style={{ height: '150px', width: '400px' }}
+            >
+              <h5 className="mt-4 ms-5">Appearance</h5>
+              <div className="mt-2 ms-auto me-auto d-flex gap-5">
+                <div className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="inlineRadioOptions"
+                    id="whitemode"
+                    value="white"
+                    checked={!darkMode}
+                    onClick={() => {
+                      setDarkMode(false)
+                    }}
+                  />
+                  <label className="form-check-label mt-1 fs-6" htmlFor="whitemode">
+                    White Mode
+                  </label>
+                </div>
+                <div className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="inlineRadioOptions"
+                    id="darkmode"
+                    value="dark"
+                    checked={darkMode}
+                    onClick={() => {
+                      setDarkMode(true)
+                    }}
+                  />
+                  <label className="form-check-label mt-1 fs-6" htmlFor="darkmode">
+                    Dark Mode
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
+              style={{ height: '180px', width: '400px' }}
+            >
+              <h5 className="mt-4 ms-5">Security</h5>
+
+              <div className="mt-2 form-check form-switch ms-5">
+                <input className="form-check-input" type="checkbox" role="switch" id="lockscreen" />
+                <label className="form-check-label mt-1" htmlFor="lockscreen">
+                  Lock Screen
+                </label>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary ms-5 me-5 mt-2"
+                data-bs-toggle="modal"
+                data-bs-target="#pinmodal"
+              >
+                Change PIN
+              </button>
+            </div>
+
+            <div
+              className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
+              style={{ height: '150px', width: '400px' }}
+            >
+              <h5 className="mt-4 ms-5">Data</h5>
+
+              <div className="m-auto d-inline-flex gap-4">
+                <button type="button" className="btn btn-outline-primary">
+                  Backup & Export
+                </button>
+
+                <button type="button" className="btn btn-outline-primary">
+                  Import
+                </button>
+
+                <button type="button" className="btn btn-outline-danger">
+                  Delete All
+                </button>
+              </div>
+            </div>
+          </>
         )}
         {selected == 0 && (
           <div
@@ -534,7 +621,7 @@ function Settings() {
                 style={{ width: '100px' }}
                 onClick={async (e) => {
                   e.preventDefault()
-                  await supabase.auth.signOut()
+                  await window.api.Logout()
                   localStorage.removeItem('user:email')
                   localStorage.removeItem('user:name')
                   window.location.replace('#')

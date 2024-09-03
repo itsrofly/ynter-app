@@ -29,7 +29,6 @@ import {
 
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { supabase } from '@renderer/App'
 
 export interface Chat {
   args?
@@ -289,14 +288,11 @@ function Dashboard(): JSX.Element {
     chatRef.current.scrollTop = chatRef.current.scrollHeight
 
     if (textareaRef.current) {
-
       textareaRef.current.style.height = '20px' // Reset height
 
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px` // Set to scrollHeight
 
-      if (textareaRef.current.scrollHeight > 160)
-
-        textareaRef.current.style.overflow = 'auto'
+      if (textareaRef.current.scrollHeight > 160) textareaRef.current.style.overflow = 'auto'
     }
   }, [chatOutput, chatInput])
 
@@ -307,11 +303,18 @@ function Dashboard(): JSX.Element {
 
       e.preventDefault() // Prevents the default action (inserting a new line)
 
-      // Add input message and file to the chat
-      const file = `<br /> ➡ ${chatAttach?.filename}<div style="display: none; margin: 0; padding: 0; border: none; line-height: 0;">FileData:${chatAttach?.data}</div>`
+      // Inser message and file if exist
+      if (chatAttach)
+        chat.current.push({
+          role: 'system',
+          content: JSON.stringify({
+            'File Name': chatAttach?.filename,
+            'File Content': chatAttach?.data
+          })
+        })
       chat.current.push({
         role: 'user',
-        content: `<div>${chatInput}</div>` + (chatAttach ? file : '')
+        content: `<div>${chatInput}</div>` + (chatAttach ? `<br /> ➡ ${chatAttach?.filename}` : '')
       })
 
       // Reset Default Values
@@ -324,12 +327,8 @@ function Dashboard(): JSX.Element {
       // Disable sending button until finish
       setSendIsAvailable(false)
 
-      // Get Session, if invalid send message
-      const {
-        data: { session },
-        error
-      } = await supabase.auth.getSession()
-      if (error || !session) {
+      const access_token = await window.api.Session()
+      if (!access_token) {
         chat.current.push({
           role: 'assistant',
           content: "Something has gone wrong. Make sure you're logged in."
@@ -347,7 +346,7 @@ function Dashboard(): JSX.Element {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          token: session.access_token,
+          token: access_token,
           schema: database_schema,
           version: APP_VERSION,
           messages: chat.current,
@@ -453,7 +452,7 @@ function Dashboard(): JSX.Element {
               outputBuffer += message.tool_calls[0].function.arguments
             } else if (message.content) {
               outputBuffer += message.content
-   
+
               // Yield control to avoid blocking the main thread
               await new Promise((resolve) => requestAnimationFrame(resolve))
               // Update state with incremental data
@@ -468,7 +467,17 @@ function Dashboard(): JSX.Element {
         const name = callFunction.function.name
 
         // Function Arguments
-        const json_data = JSON.parse(outputBuffer)
+        let json_data
+
+        try {
+          json_data = JSON.parse(outputBuffer)
+        } catch (error) {
+          chat.current.push({
+            role: 'assistant',
+            content: 'Something has gone wrong. Please try again.'
+          })
+          console.error(outputBuffer)
+        }
 
         // Add function to the chat history
         chat.current.push({
@@ -495,7 +504,6 @@ function Dashboard(): JSX.Element {
           })
         }
 
-        console.log(chat.current)
         // Fetch chat
         const response = await fetch(CHAT_API, {
           method: 'POST',
@@ -503,7 +511,7 @@ function Dashboard(): JSX.Element {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            token: session.access_token,
+            token: access_token,
             schema: database_schema,
             version: APP_VERSION,
             messages: chat.current,

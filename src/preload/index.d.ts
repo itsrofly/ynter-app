@@ -6,6 +6,10 @@ declare global {
     onUpdateSession: callback
     onPinCode: callback
     api: {
+      Session(): Promise<string | undefined>
+      googleOauth(): Promise<void>
+      otpSign(): Promise<void>
+      Logout(): Promise<void>
       Database(query: string, params?: (string | number | null)[]): Promise<any>
       Utils(query: string, params?: (string | number | null)[]): Promise<any>
       sendPinCode(pin): void
@@ -15,7 +19,7 @@ declare global {
       showCopyFile(file: string): Promise<string | undefined>
       showGetFile(): Promise<{ filename: string; file: string; filesize: number }>
       showSavefile(file: string): void
-      DeleteFile(file: string): void
+      deleteFile(file: string): void
     }
   }
 }

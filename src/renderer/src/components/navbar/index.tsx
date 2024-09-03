@@ -1,6 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useState } from 'react'
-import { supabase } from '../../App'
 
 // Icons
 import Logo from '../../assets/logo.svg'
@@ -283,17 +282,7 @@ export default function Navbar(): JSX.Element {
           e.preventDefault() // Prevent reload
           setLoading(true) // Start loading feedback
 
-          // Create server listener
-          const url = await window.api.Server()
-
-          // Login using supabase Otp
-          const { error } = await supabase.auth.signInWithOtp({
-            email: email,
-            options: {
-              shouldCreateUser: true,
-              emailRedirectTo: url
-            }
-          })
+          const error = window.api.otpSign()
 
           // Change the bottom message and stop loading
           if (error) {
@@ -344,21 +333,7 @@ export default function Navbar(): JSX.Element {
                     onKeyDown={(e) => e.preventDefault()}
                     onClick={async (e) => {
                       e.preventDefault()
-                      // Create server listener
-                      const url = await window.api.Server()
-
-                      // Create the auth and set the redirect to the server listener
-                      const { data } = await supabase.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: {
-                          scopes: 'Profile email',
-                          skipBrowserRedirect: true,
-                          redirectTo: url
-                        }
-                      })
-
-                      // Open url in default url
-                      if (data.url) window.openExternal(data.url)
+                      await window.api.googleOauth()
                     }}
                     style={{ width: '300px' }}
                   >

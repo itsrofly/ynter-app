@@ -1,6 +1,10 @@
+import { app, safeStorage, webContents } from "electron"
+import { writeFile } from "fs/promises"
+import path from "path"
+import { supabase } from "."
+
 const http = require('http')
 const url = require('url')
-const { webContents } = require('electron')
 
 // const WEBSITE = import.meta.env.VITE_WEBSITE
 export const callback_server = (): string => {
@@ -12,7 +16,7 @@ export const callback_server = (): string => {
 
   // Create a new server on port 4000
   const server = http
-    .createServer(function (req, res) {
+    .createServer(async function (req, res) {
       // Parse the URL to get the query parameters
       const parsedUrl = url.parse(req.url, true)
       const query = parsedUrl.query
@@ -26,7 +30,30 @@ export const callback_server = (): string => {
       })
       res.end() // End the response
 
-      if (code && webContent) webContent.send('update-session', code)
+      if (code && webContent) {
+        // Data from code
+        const { data } = await supabase.auth.exchangeCodeForSession(code)
+
+        // Initial password, Besically no pin is setup
+        const filePath = path.join(app.getPath('userData'), 'User.ynter');
+
+        webContent.send('update-session',
+          data.user?.user_metadata.full_name,
+           data.user?.email)
+
+        // User informations
+        const User = {
+          email: data.user?.email,
+          pin: null,
+          access_token: data.session?.access_token,
+          refresh_token: data.session?.refresh_token
+        }
+
+        // Encry and store
+        const secretData = JSON.stringify(User);
+        const encryptedData = safeStorage.encryptString(secretData);
+        writeFile(filePath, encryptedData);
+      }
       if (error) console.error(query)
 
       // Close the server
