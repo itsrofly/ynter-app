@@ -90,7 +90,7 @@ export const callback_server = (): string => {
       console.log('socket', socketId, 'destroyed')
       sockets[socketId].destroy()
     }
-  }, 300000) // 5 minutes in milliseconds
+  }, 10 * 60 * 1000) // 10 minutes
 
   // Retrieve the assigned port number
   const port = server.address().port

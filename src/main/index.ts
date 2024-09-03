@@ -4,9 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 import { connection, connectionUtils } from './knex'
 import { callback_server } from './oauth-callback'
-import { readFileSync, statSync, unlink } from 'fs'
+import { readFileSync, statSync, unlink, unlinkSync } from 'fs'
 import * as Sentry from '@sentry/electron/main'
-import { copyFile, readFile } from 'fs/promises'
+import { copyFile, readFile, writeFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import { createClient } from '@supabase/supabase-js'
 
@@ -14,6 +14,13 @@ const pdf = require('pdf-parse')
 const XLSX = require('xlsx')
 
 let mainWindow
+
+interface User {
+  email: string,
+  pin: null | string,
+  access_token: string,
+  refresh_token: string
+}
 
 function getFilesizeInMb(filename): number {
   const stats = statSync(filename)
@@ -143,14 +150,14 @@ if (!gotTheLock) {
     electronApp.setAppUserModelId('app.ynter.co')
 
     const userFile = path.join(app.getPath('userData'), 'User.ynter');
-    // Load Session
+    // Load Session from file
     if (existsSync(userFile)) {
       try {
         // Read encrypted data from disk
         const encryptedData = await readFile(userFile);
 
         // Decrypt data
-        const decryptedData = JSON.parse(safeStorage.decryptString(encryptedData))
+        const decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
 
         // Load session
         await supabase.auth.setSession({
@@ -171,6 +178,10 @@ if (!gotTheLock) {
     })
     // Return access_token
     ipcMain.handle('User:token', async () => {
+      // If file dont exist ignore
+      if (!existsSync(userFile))
+        return
+
       const {
         data: { session }
       } = await supabase.auth.getSession()
@@ -180,41 +191,172 @@ if (!gotTheLock) {
     // Logout user
     ipcMain.handle('User:logout', async () => {
       await supabase.auth.signOut()
+      // Remove user file
+      unlinkSync(userFile)
     })
 
     // Login using google oauth
     ipcMain.handle('User:oauth', async () => {
-      // Create server listener
-      const url = callback_server()
+      try {
+        // If file dont exist ignore
+        if (existsSync(userFile)) {
+          // Read encrypted data from disk
+          const encryptedData = await readFile(userFile);
 
-      // Create the auth and set the redirect to the server listener
-      const { data } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          scopes: 'Profile email',
-          skipBrowserRedirect: true,
-          redirectTo: url
+          // Decrypt data
+          const decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+          if (decryptedData.pin)
+            return
         }
-      })
+        // Create server listener
+        const url = callback_server()
 
-      // Open url in default url
-      if (data.url) shell.openExternal(data.url)
+        // Create the auth and set the redirect to the server listener
+        const { data } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            scopes: 'Profile email',
+            skipBrowserRedirect: true,
+            redirectTo: url
+          }
+        })
+
+        // Open url in default url
+        if (data.url) shell.openExternal(data.url)
+      } catch (error) {
+        console.error(error)
+      }
     })
 
     // Login using otp
     ipcMain.handle('User:otp', async (_ev, email) => {
-      // Create server listener
-      const url = callback_server()
+      try {
+        // If file dont exist ignore
+        if (existsSync(userFile)) {
+          // Read encrypted data from disk
+          const encryptedData = await readFile(userFile);
 
-      // Login using supabase Otp
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: url
+          // Decrypt data
+          const decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+          if (decryptedData.pin)
+            return
         }
-      })
-      return error
+
+        // Create server listener
+        const url = callback_server()
+
+        // Login using supabase Otp
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            shouldCreateUser: true,
+            emailRedirectTo: url
+          }
+        })
+        return error
+      } catch (error) {
+        console.error(error)
+        return
+      }
+    })
+
+    // Create pin or update
+    ipcMain.handle('Pin:setup', async (_ev, newPin, oldPin) => {
+      try {
+        // If file dont exist ignore
+        if (!existsSync(userFile))
+          return
+        // Read encrypted data from disk
+        let encryptedData = await readFile(userFile);
+
+        // Decrypt data
+        let decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+        // If pin
+        if (decryptedData.pin) {
+          // And pin is the old pin
+          if (decryptedData.pin === oldPin) {
+            decryptedData.pin = newPin // Then update pin
+            // Save file
+            encryptedData = safeStorage.encryptString(JSON.stringify(decryptedData))
+            writeFile(userFile, encryptedData)
+            return true
+          }
+          return false
+        } else {
+          decryptedData.pin = newPin // Setup pin
+          // Save file
+          encryptedData = safeStorage.encryptString(JSON.stringify(decryptedData))
+          writeFile(userFile, encryptedData)
+          return true
+        }
+      } catch (error) {
+        console.error(error)
+        return false
+      }
+    })
+
+    // Forget pin
+    ipcMain.handle('Pin:forget', async () => {
+      try {
+        // If file dont exist ignore
+        if (!existsSync(userFile))
+          return
+        // Read encrypted data from disk
+        const encryptedData = await readFile(userFile);
+
+        // Decrypt data
+        let decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+        // Create server listener
+        const url = callback_server()
+
+        // Login using supabase Otp, 
+        // This will reset the User file only if otp is a total success
+        const { error } = await supabase.auth.signInWithOtp({
+          email: decryptedData.email, // Uses the email address used to create the initial user settings
+          options: {
+            emailRedirectTo: url
+          }
+        })
+        return error
+      } catch (error) {
+        console.error(error)
+        return
+      }
+    })
+
+    // Check if input pin is valid
+    ipcMain.handle("Pin:check", async (_event, value) => {
+      // If file dont exist ignore
+      if (!existsSync(userFile))
+        return false
+
+      // Read encrypted data from disk
+      const encryptedData = await readFile(userFile);
+
+      // Decrypt data
+      let decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+      // Check if is valid
+      return decryptedData.pin === value
+    })
+
+    // Check if has pin
+    ipcMain.handle("Pin:has", async (_event) => {
+      // If file dont exist ignore
+      if (!existsSync(userFile))
+        return false
+      // Read encrypted data from disk
+      const encryptedData = await readFile(userFile);
+
+      // Decrypt data
+      let decryptedData: User = JSON.parse(safeStorage.decryptString(encryptedData))
+
+      // Check if has pin
+      return (decryptedData.pin ? true : false)
     })
 
     // Open/create/execute database event
@@ -270,19 +412,6 @@ if (!gotTheLock) {
       } catch (error) {
         return
       }
-    })
-
-    ipcMain.handle("pin-code-check", async (_event, value) => {
-      // Read encrypted data from disk
-      const encryptedData = await readFile(path.join(app.getPath('userData'), '42'));
-
-      // Decrypt data
-      const decryptedData = safeStorage.decryptString(encryptedData);
-
-      if (decryptedData === value)
-        mainWindow.webContents.send("pin-code", true)
-      else
-        mainWindow.webContents.send("pin-code", false)
     })
 
     // Copy file to the appData folder with a random name

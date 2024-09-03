@@ -7,6 +7,7 @@ const PLAIDEXCHANGE = import.meta.env.VITE_PLAIDEXCHANGE_API
 const PLAIDTRANSACTIONS = import.meta.env.VITE_PLAIDTRANSACTIONS
 const PLAIDDELETE = import.meta.env.VITE_PLAIDDELETE
 declare const Plaid
+declare const bootstrap
 
 interface PLAIDRECEIPT {
   transaction_id: string
@@ -52,7 +53,7 @@ async function exchangePublicToken(public_token) {
 async function createLinkToken(setFeedback, index: number, institution_id?: string) {
   // User data
   const access_token = await window.api.Session()
-  
+
   if (!access_token) {
     window.api.showError('Session loading failed, please make sure you are logged in.')
   }
@@ -335,7 +336,12 @@ function Settings() {
   const [banks, setBanks] = useState([])
   const [refresh, setRefresh] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [hasPin, setHasPin] = useState(false)
+  const [removePin, setRemovePin] = useState(false)
+  const [newPin, setNewPin] = useState('')
+  const [oldPin, setOldPin] = useState('')
   const [refreshLoading, setRefreshLoading] = useState<undefined | { index: number }>()
+  const [pinFeedBack, setPinFB] = useState('')
   const [feedback, setFeedback] = useState<{
     class: 'text-danger' | 'text-warning' | 'text-info-emphasis' | 'text-dark'
     message: string
@@ -356,6 +362,14 @@ function Settings() {
       }
       setBanks(data)
     }
+    const Pin = async () => {
+      setHasPin(await window.api.hasPinCode())
+      setNewPin('')
+      setOldPin('')
+      setRemovePin(false)
+      setPinFB("")
+    }
+    Pin()
     getBanks()
   }, [refresh])
 
@@ -366,7 +380,25 @@ function Settings() {
 
   return (
     <div className="right-content-secondary">
-      <form action="">
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault()
+          const done = await window.api.createPinCode(removePin ? null : newPin, oldPin)
+
+          if (done) {
+            setRefresh(!refresh)
+            const myModalEl = document.getElementById('pinmodal')
+            const modal = bootstrap.Modal.getInstance(myModalEl)
+            modal.hide()
+
+            if (!hasPin) {
+              window.location.replace('#')
+              window.location.reload()
+            }
+          } else
+            setPinFB("Incorrect PIN")
+        }}
+      >
         <div
           className="modal fade"
           id="pinmodal"
@@ -388,39 +420,65 @@ function Settings() {
                 ></button>
               </div>
               <div className="modal-body p-4">
-                <div className="input-group flex-nowrap">
-                  <span className="input-group-text" id="addon-wrapping" style={{ width: '60px' }}>
-                    Old
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="4 digits"
-                    aria-label="oldpin"
-                    aria-describedby="addon-wrapping"
-                    maxLength={4}
-                  />
-                </div>
+                {hasPin && (
+                  <div className="input-group flex-nowrap">
+                    <span
+                      className="input-group-text"
+                      id="addon-wrapping"
+                      style={{ width: '60px' }}
+                    >
+                      Old
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="4 digits"
+                      aria-label="oldpin"
+                      aria-describedby="addon-wrapping"
+                      value={oldPin}
+                      onChange={(e) => {
+                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '') setOldPin(e.target.value)
+                      }}
+                      maxLength={4}
+                      minLength={4}
+                    />
+                  </div>
+                )}
 
-                <div className="input-group flex-nowrap mt-3">
-                  <span className="input-group-text" id="addon-wrapping" style={{ width: '60px' }}>
-                    New
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="4 digits"
-                    aria-label="newpin"
-                    aria-describedby="addon-wrapping"
-                    maxLength={4}
-                  />
-                </div>
+                {!removePin && (
+                  <div className="input-group flex-nowrap mt-3">
+                    <span
+                      className="input-group-text"
+                      id="addon-wrapping"
+                      style={{ width: '60px' }}
+                    >
+                      New
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="4 digits"
+                      aria-label="newpin"
+                      aria-describedby="addon-wrapping"
+                      value={newPin}
+                      onChange={(e) => {
+                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '') setNewPin(e.target.value)
+                      }}
+                      maxLength={4}
+                      minLength={4}
+                    />
+                  </div>
+                )}
+
+                <h6 className='mt-4'>
+                  {pinFeedBack}
+                </h6>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
                   Close
                 </button>
-                <button type="button" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary">
                   Save changes
                 </button>
               </div>
@@ -552,7 +610,20 @@ function Settings() {
               <h5 className="mt-4 ms-5">Security</h5>
 
               <div className="mt-2 form-check form-switch ms-5">
-                <input className="form-check-input" type="checkbox" role="switch" id="lockscreen" />
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="lockscreen"
+                  checked={hasPin}
+                  disabled={!hasPin}
+                  data-bs-toggle="modal"
+                  data-bs-target="#pinmodal"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setRemovePin(true)
+                  }}
+                />
                 <label className="form-check-label mt-1" htmlFor="lockscreen">
                   Lock Screen
                 </label>
@@ -564,7 +635,7 @@ function Settings() {
                 data-bs-toggle="modal"
                 data-bs-target="#pinmodal"
               >
-                Change PIN
+                {hasPin ? 'Change PIN' : 'Create PIN'}
               </button>
             </div>
 
@@ -686,10 +757,10 @@ function Settings() {
                               // Insert Bank id and name to the banks database
                               await window.api.Utils(
                                 `
-                                                                INSERT INTO banks (id, institution_name)
-                                                                VALUES (?, ?)
-                                                                ON CONFLICT(id) DO UPDATE SET 
-                                                                    institution_name = excluded.institution_name;
+                                  INSERT INTO banks (id, institution_name)
+                                  VALUES (?, ?)
+                                  ON CONFLICT(id) DO UPDATE SET 
+                                      institution_name = excluded.institution_name;
                                                                 `,
                                 [bankData.institution_id, bankData.institution_name]
                               )
@@ -733,27 +804,6 @@ function Settings() {
                     </div>
                   )}
                 </a>
-                {/* 
-                                <a href="#" className={"btn btn-outline-secondary " + (refreshLoading?.index == -1 ? "disabled" : "")}
-                                    aria-disabled={(refreshLoading?.index == -1 ? "true" : "false")} style={{ width: "150px" }}
-                                    onClick={async (e) => {
-                                        e.preventDefault();
-                                        // Starting feedback loading
-                                        setRefreshLoading({ index: -1 })
-
-                                        // RefreshAll
-                                        await transactionsRefreshaAll();
-
-                                        // Stop loading
-                                        setRefreshLoading(undefined);
-                                        setRefresh(!refresh);
-                                    }}>
-                                    Refresh All
-
-                                    {(refreshLoading?.index == -1) && <div className="ms-2 spinner-grow spinner-grow-sm" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>}
-                                </a>*/}
               </div>
             </div>
 
@@ -846,7 +896,6 @@ function Settings() {
                             })
                             handler.open()
                           }
-                          setRefreshLoading(undefined)
                         } catch (error) {
                           setRefreshLoading(undefined)
                           window.api.showError(

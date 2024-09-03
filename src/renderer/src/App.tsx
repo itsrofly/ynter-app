@@ -37,12 +37,6 @@ async function finish_load(): Promise<void> {
       e.preventDefault()
     })
 
-    /*
-    Send inicial display code - No pin setup
-    if is not valid means that the user setup a pin, then active lockDisplay and inactivity locker
-    if is valid then never lock the display
-    */
-    window.api.sendPinCode('no justice, no code')
     const email = localStorage.getItem('user:email')
     const access_token = await window.api.Session()
 
@@ -67,6 +61,7 @@ async function finish_load(): Promise<void> {
       localStorage.setItem('user:name', name)
       window.location.reload()
     })
+    window.onReady()
   } catch (error) {
     window.api.showError(`Something has gone wrong. Please report the error.\nError code: 1.0v001`)
     console.error(error)
@@ -141,26 +136,26 @@ export default function App(): JSX.Element {
   return (
     <>
       <div
-        className="position-absolute top-50 start-50 translate-middle z-3 rounded rounded-5 border border-2"
+        className="position-absolute top-50 start-50 translate-middle z-3 rounded rounded-3 border border-primary"
         id="loginmodal"
         style={{ height: '200px', width: '400px', backgroundColor: '#fafafa', display: 'none' }}
       >
         <div
           className="pin-input h-100 w-100 d-flex gap-3 
-        justify-content-center align-items-center"
-        >
-          <input
+        justify-content-center align-items-center p-2 text-center"
+        id='inputpin'>
+                    <input
             type="password"
             ref={pinFi}
             maxLength={1}
-            className="pin-digit fs-1 text-center rounded"
+            className="pin-digit fs-2 text-center rounded"
             onInput={(e) => moveToNext(e, 1)}
           />
           <input
             type="password"
             ref={pinSe}
             maxLength={1}
-            className="pin-digit fs-1 text-center rounded"
+            className="pin-digit fs-2 text-center rounded"
             onInput={(e) => moveToNext(e, 2)}
             onKeyDown={(e) => moveToBack(e, 0)}
           />
@@ -168,7 +163,7 @@ export default function App(): JSX.Element {
             type="password"
             ref={pinTh}
             maxLength={1}
-            className="pin-digit fs-1 text-center rounded"
+            className="pin-digit fs-2 text-center rounded"
             onInput={(e) => moveToNext(e, 3)}
             onKeyDown={(e) => moveToBack(e, 1)}
           />
@@ -176,7 +171,7 @@ export default function App(): JSX.Element {
             type="password"
             ref={pinFo}
             maxLength={1}
-            className="pin-digit fs-1 text-center rounded"
+            className="pin-digit fs-2 text-center rounded"
             onInput={(e) => moveToNext(e, 4)}
             onKeyDown={(e) => moveToBack(e, 2)}
           />

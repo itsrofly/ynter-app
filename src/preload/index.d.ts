@@ -2,9 +2,8 @@ import { shell } from 'electron'
 
 declare global {
   interface Window {
-    openExternal: shell.openExternal
     onUpdateSession: callback
-    onPinCode: callback
+    onReady(): void
     api: {
       Session(): Promise<string | undefined>
       googleOauth(): Promise<void>
@@ -13,6 +12,9 @@ declare global {
       Database(query: string, params?: (string | number | null)[]): Promise<any>
       Utils(query: string, params?: (string | number | null)[]): Promise<any>
       sendPinCode(pin): void
+      hasPinCode():  Promise<boolean>
+      createPinCode(newPin: string | null, oldPin: string): Promise<boolean>
+      forgetPinCode(): Promise<any>
       showError(content: string): void
       Server(): Promise<string | undefined>
       showOpenFile(): Promise<{ filename: string; data: string } | undefined>
