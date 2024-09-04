@@ -176,6 +176,12 @@ if (!gotTheLock) {
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
+
+    // Return country code 
+    ipcMain.handle("Country:code", () => {
+      return app.getLocaleCountryCode()
+    })
+    
     // Return access_token
     ipcMain.handle('User:token', async () => {
       // If file dont exist ignore

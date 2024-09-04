@@ -350,9 +350,9 @@ function Settings() {
 
   useEffect(() => {
     // Get a list of notes using filter and sort
-    const getBanks = async () => {
+    const loadData = async () => {
+      // Fetch Banks
       const data = await fetchBanks()
-
       if (data.length >= 5) {
         setFeedback({
           class: 'text-dark',
@@ -361,16 +361,15 @@ function Settings() {
         })
       }
       setBanks(data)
-    }
-    const Pin = async () => {
+
+      // Set PIN Initial Values
       setHasPin(await window.api.hasPinCode())
       setNewPin('')
       setOldPin('')
       setRemovePin(false)
       setPinFB('')
     }
-    Pin()
-    getBanks()
+    loadData()
   }, [refresh])
 
   useEffect(() => {
@@ -563,7 +562,7 @@ function Settings() {
           <>
             <div
               className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
-              style={{ height: '200px', width: '400px' }}
+              style={{ height: '150px', width: '400px' }}
             >
               <h5 className="mt-4 ms-5">Appearance</h5>
               <div className="mt-2 ms-auto me-auto d-flex gap-5">
@@ -600,6 +599,7 @@ function Settings() {
                   </label>
                 </div>
               </div>
+              {/*  Setup currency
               <div className="input-group w-75 ms-auto me-auto mt-4">
                 <span className="input-group-text" id="addon-wrapping">
                   Currency
@@ -607,13 +607,13 @@ function Settings() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="$"
+                  placeholder={currency}
                   aria-label="currency"
                   aria-describedby="addon-wrapping"
                   maxLength={1}
                   minLength={1}
                 />
-              </div>
+              </div>*/}
             </div>
 
             <div

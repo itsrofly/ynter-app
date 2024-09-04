@@ -1,5 +1,6 @@
 // React
 import { useEffect, useRef, useState } from 'react'
+import currencies from '../../assets/iso-country-currency.json'
 
 // Components
 // import { Agenda, fetchEventData } from "../agenda";
@@ -261,10 +262,29 @@ function Dashboard(): JSX.Element {
   const [expensesValue, setExpensesValue] = useState<number>(0)
   const [expensesData, setExpensesData] = useState([])
 
+  // Currency
+  const [currency, setCurrency] = useState("$")
+
   /*
     // Agenda list & upcoming / all
     const [allAgenda, setAllAgenda] = useState<boolean>(false);
     const [agenda, setAgenda] = useState<Agenda[]>([]);*/
+
+  // Setup Currency
+  useEffect(() => {
+    const loadCurrency = async () => {
+      const symbol = currencies[await window.api.countryCode()].symbol ?? "$"
+      // Set initial currency
+      setCurrency(
+        symbol
+      ) 
+      chat.current.push({
+        role: "system",
+        content: "User currency symbol:" + symbol
+      })
+    }
+    loadCurrency()
+  })
 
   // Change balance when is changed to month or year
   useEffect(() => {
@@ -597,7 +617,7 @@ function Dashboard(): JSX.Element {
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
               <div>
-                Balance <div>{balanceValue}$</div>{' '}
+                Balance <div>{balanceValue}{currency}</div>{' '}
               </div>
               <div>
                 <button
@@ -684,7 +704,7 @@ function Dashboard(): JSX.Element {
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
               <div>
-                Expenses <div>{expensesValue}$</div>{' '}
+                Expenses <div>{expensesValue}{currency}</div>{' '}
               </div>
               <div>
                 <button

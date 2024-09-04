@@ -41,6 +41,7 @@ function unlockDisplay() {
 
 // Custom APIs for renderer
 const api = {
+  countryCode: () => ipcRenderer.invoke('Country:code'),
   Session: () => ipcRenderer.invoke('User:token'),
   Logout: () => ipcRenderer.invoke('User:logout'),
   googleOauth: () => ipcRenderer.invoke('User:oauth'),

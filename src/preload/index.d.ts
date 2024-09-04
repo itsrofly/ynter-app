@@ -22,6 +22,7 @@ declare global {
       showGetFile(): Promise<{ filename: string; file: string; filesize: number }>
       showSavefile(file: string): void
       deleteFile(file: string): void
+      countryCode(): Promise<string>
     }
   }
 }

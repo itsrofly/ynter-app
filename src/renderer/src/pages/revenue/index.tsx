@@ -1,5 +1,6 @@
 // React
 import { useState, useEffect } from 'react'
+import currencies from '../../assets/iso-country-currency.json'
 
 // Components
 import NewReceipt from '../../components/receipt'
@@ -214,6 +215,9 @@ function Revenue(): JSX.Element {
   })
   const [formSubmit, setFormSubmit] = useState(true)
 
+  // Currency
+  const [currency, setCurrency] = useState('$')
+
   // Reset form values when this component is refresh
   useEffect(() => {
     setFormValue({
@@ -259,6 +263,18 @@ function Revenue(): JSX.Element {
     }
     fetchBalance()
   }, [monthReceipt, dateList, selectedOption, refresh])
+
+    // Setup Currency
+    useEffect(() => {
+      const loadCurrency = async () => {
+        const symbol = currencies[await window.api.countryCode()].symbol ?? "$"
+        // Set initial currency
+        setCurrency(
+          symbol
+        )
+      }
+      loadCurrency()
+    })
 
   return (
     <div className="right-content-primary">
@@ -353,7 +369,7 @@ function Revenue(): JSX.Element {
           </div>
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
-              <div>{revenueValue}$</div>
+              <div>{revenueValue}{currency}</div>
               <div>
                 <button
                   type="button"
@@ -663,7 +679,7 @@ function Revenue(): JSX.Element {
 
                             <div className="mt-auto m-3">
                               <div className="d-flex align-items-end justify-content-between h-100">
-                                <div>{rev.amount}$</div>
+                                <div>{rev.amount}{currency}</div>
                                 <div>{new Date(rev.date).toDateString()}</div>
                               </div>
                             </div>
