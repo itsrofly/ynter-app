@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PlaidExpenseCategory, PlaidRevenueCategory } from '@renderer/components/plaid'
+import ComingSoon from '../../assets/Comingsoon.svg'
 
 const WEBSITE = import.meta.env.VITE_WEBSITE
 const PLAIDLINK = import.meta.env.VITE_PLAIDLINK_API
@@ -331,7 +332,6 @@ export async function transactionsRefreshaAll() {
 }
 
 function Settings() {
-  const [darkMode, setDarkMode] = useState(false)
   const [selected, setSelected] = useState(0)
   const [banks, setBanks] = useState([])
   const [refresh, setRefresh] = useState(false)
@@ -371,11 +371,6 @@ function Settings() {
     }
     loadData()
   }, [refresh])
-
-  useEffect(() => {
-    // Native mode is white then
-    setDarkMode(false)
-  }, [])
 
   return (
     <div className="right-content-secondary">
@@ -560,10 +555,12 @@ function Settings() {
       <div className="area-second border-top overflow-y-auto d-flex flex-column align-items-center">
         {selected > 1 && (
           <>
+            {/*
             <div
               className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
               style={{ height: '150px', width: '400px' }}
             >
+        
               <h5 className="mt-4 ms-5">Appearance</h5>
               <div className="mt-2 ms-auto me-auto d-flex gap-5">
                 <div className="form-check form-check-inline">
@@ -599,7 +596,7 @@ function Settings() {
                   </label>
                 </div>
               </div>
-              {/*  Setup currency
+
               <div className="input-group w-75 ms-auto me-auto mt-4">
                 <span className="input-group-text" id="addon-wrapping">
                   Currency
@@ -613,8 +610,8 @@ function Settings() {
                   maxLength={1}
                   minLength={1}
                 />
-              </div>*/}
-            </div>
+              </div>
+            </div>*/}
 
             <div
               className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
@@ -671,6 +668,10 @@ function Settings() {
                   Delete All
                 </button>
               </div>
+            </div>
+
+            <div>
+              <img src={ComingSoon} className='mb-5' alt="coming" width={300} height={300} />
             </div>
           </>
         )}
