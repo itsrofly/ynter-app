@@ -367,7 +367,7 @@ function Settings() {
       setNewPin('')
       setOldPin('')
       setRemovePin(false)
-      setPinFB("")
+      setPinFB('')
     }
     Pin()
     getBanks()
@@ -395,8 +395,7 @@ function Settings() {
               window.location.replace('#')
               window.location.reload()
             }
-          } else
-            setPinFB("Incorrect PIN")
+          } else setPinFB('Incorrect PIN')
         }}
       >
         <div
@@ -437,7 +436,8 @@ function Settings() {
                       aria-describedby="addon-wrapping"
                       value={oldPin}
                       onChange={(e) => {
-                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '') setOldPin(e.target.value)
+                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '')
+                          setOldPin(e.target.value)
                       }}
                       maxLength={4}
                       minLength={4}
@@ -462,7 +462,8 @@ function Settings() {
                       aria-describedby="addon-wrapping"
                       value={newPin}
                       onChange={(e) => {
-                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '') setNewPin(e.target.value)
+                        if (/^-?\d+(\.\d+)?$/.test(e.target.value) || e.target.value === '')
+                          setNewPin(e.target.value)
                       }}
                       maxLength={4}
                       minLength={4}
@@ -470,9 +471,7 @@ function Settings() {
                   </div>
                 )}
 
-                <h6 className='mt-4'>
-                  {pinFeedBack}
-                </h6>
+                <h6 className="mt-4">{pinFeedBack}</h6>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
@@ -564,7 +563,7 @@ function Settings() {
           <>
             <div
               className="border border-2 rounded d-flex flex-column gap-2 mt-auto mb-auto"
-              style={{ height: '150px', width: '400px' }}
+              style={{ height: '200px', width: '400px' }}
             >
               <h5 className="mt-4 ms-5">Appearance</h5>
               <div className="mt-2 ms-auto me-auto d-flex gap-5">
@@ -600,6 +599,20 @@ function Settings() {
                     Dark Mode
                   </label>
                 </div>
+              </div>
+              <div className="input-group w-75 ms-auto me-auto mt-4">
+                <span className="input-group-text" id="addon-wrapping">
+                  Currency
+                </span>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="$"
+                  aria-label="currency"
+                  aria-describedby="addon-wrapping"
+                  maxLength={1}
+                  minLength={1}
+                />
               </div>
             </div>
 

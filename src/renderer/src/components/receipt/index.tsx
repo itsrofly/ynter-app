@@ -261,7 +261,7 @@ function NewReceipt({
                       data-bs-dismiss="modal"
                       onClick={() => {
                         handleDeleteReceipt(idValue, table)
-                        window.api.DeleteFile(fileValue)
+                        window.api.deleteFile(fileValue)
                         setRefresh(!refresh)
                       }}
                     >

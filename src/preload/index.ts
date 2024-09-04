@@ -113,7 +113,7 @@ if (process.contextIsolated) {
 
         // Setup lock timer
         let inactivityTimer
-        const inactivityTime = 3 * 60 * 1000 // in 3 minutes of inactivity
+        const inactivityTime = 10 * 60 * 1000 // in 10 minutes of inactivity
 
         function resetTimer() {
           clearTimeout(inactivityTimer)
