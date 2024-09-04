@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { PlaidExpenseCategory, PlaidRevenueCategory } from '@renderer/components/plaid'
-import ComingSoon from '../../assets/Comingsoon.svg'
 
 const WEBSITE = import.meta.env.VITE_WEBSITE
 const PLAIDLINK = import.meta.env.VITE_PLAIDLINK_API
@@ -668,10 +667,6 @@ function Settings() {
                   Delete All
                 </button>
               </div>
-            </div>
-
-            <div>
-              <img src={ComingSoon} className='mb-5' alt="coming" width={300} height={300} />
             </div>
           </>
         )}
