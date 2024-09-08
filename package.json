@@ -112,7 +112,8 @@
       "artifactName": "${name}-${version}-${arch}.${ext}",
       "shortcutName": "${productName}",
       "createDesktopShortcut": "always",
-      "uninstallDisplayName": "Ynter"
+      "uninstallDisplayName": "Ynter",
+      "include": "build/uninstaller.nsh"
     },
     "mac": {
       "entitlementsInherit": "build/entitlements.mac.plist",
