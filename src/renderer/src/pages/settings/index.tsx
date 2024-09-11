@@ -63,6 +63,16 @@ async function createLinkToken(setFeedback, index: number, institution_id?: stri
     window.api.showError('Session loading failed, please make sure you are logged in.')
   }
 
+  const ipapi_response = await fetch('https://ipapi.co/json/')
+  let region: string
+
+  if (ipapi_response.ok) {
+    const ipapi_data = await ipapi_response.json()
+
+    region = ipapi_data.country_code
+  } else 
+    region = "US"
+
   const response = await fetch(PLAIDLINK, {
     method: 'POST',
     headers: {
@@ -70,7 +80,8 @@ async function createLinkToken(setFeedback, index: number, institution_id?: stri
     },
     body: JSON.stringify({
       token: access_token,
-      institution_id: institution_id
+      institution_id: institution_id,
+      region
     })
   })
 
