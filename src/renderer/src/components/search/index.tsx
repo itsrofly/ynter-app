@@ -12,7 +12,22 @@ function Search({ table, id }: { table: 'revenue' | 'expense'; id: string }): JS
 
       setTitle(data[0].name)
 
-      const region = data[0].region ? data[0].region : await window.api.countryCode()
+      const ipapi_response = await fetch('https://ipapi.co/json/')
+
+      // Set default value
+      let region = data[0].region.length > 0 ? data[0].region : undefined
+
+      if (ipapi_response.ok) {
+        const ipapi_data = await ipapi_response.json()
+        // Only use user region if no default region from database
+        region =
+          region ??
+          (ipapi_data.city ?? '') +
+            ', ' +
+            (ipapi_data.region ?? '') +
+            ', ' +
+            (ipapi_data.country_name ?? '')
+      }
 
       const access_token = await window.api.Session()
 
