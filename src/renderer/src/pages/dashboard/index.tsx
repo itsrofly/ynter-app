@@ -263,7 +263,7 @@ function Dashboard(): JSX.Element {
   const [expensesData, setExpensesData] = useState([])
 
   // Currency
-  const [currency, setCurrency] = useState("$")
+  const [currency, setCurrency] = useState('$')
 
   /*
     // Agenda list & upcoming / all
@@ -273,14 +273,12 @@ function Dashboard(): JSX.Element {
   // Setup Currency
   useEffect(() => {
     const loadCurrency = async () => {
-      const symbol = currencies[await window.api.countryCode()].symbol ?? "$"
+      const symbol = currencies[await window.api.countryCode()].symbol ?? '$'
       // Set initial currency
-      setCurrency(
-        symbol
-      ) 
+      setCurrency(symbol)
       chat.current.push({
-        role: "system",
-        content: "User currency symbol:" + symbol
+        role: 'system',
+        content: 'User currency symbol:' + symbol
       })
     }
     loadCurrency()
@@ -575,6 +573,27 @@ function Dashboard(): JSX.Element {
 
   return (
     <div className="right-content-primary">
+      <div className="area-top mt-4 ms-1 me-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          fill="currentColor"
+          className="bi bi-arrow-clockwise"
+          viewBox="0 0 16 16"
+          style={{cursor: "pointer"}}
+          onClick={() => {
+            window.location.reload()
+          }}
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
+          />
+          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+        </svg>
+      </div>
+
       <div className="area-first">
         <div className="position-relative d-flex flex-column w-100 h-100 bg-white rounded shadow-sm">
           <div
@@ -618,7 +637,11 @@ function Dashboard(): JSX.Element {
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
               <div>
-                Balance <div>{balanceValue}{currency}</div>{' '}
+                Balance{' '}
+                <div>
+                  {balanceValue}
+                  {currency}
+                </div>{' '}
               </div>
               <div>
                 <button
@@ -705,7 +728,11 @@ function Dashboard(): JSX.Element {
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
               <div>
-                Expenses <div>{expensesValue}{currency}</div>{' '}
+                Expenses{' '}
+                <div>
+                  {expensesValue}
+                  {currency}
+                </div>{' '}
               </div>
               <div>
                 <button

@@ -434,12 +434,13 @@ function Expenses(): JSX.Element {
         setRefresh={setRefresh}
         form={formValue}
       />
-      <Search table='expense' id={searchId} />
-      <div className="area-top  mt-3">
+      <Search table="expense" id={searchId} />
+      <div className="area-top mt-4 ms-1 me-1">
+
         <button
           type="button"
           className="btn btn-sm text-center secondary text-white"
-          style={{ width: '120px', height: '32px' }}
+          style={{ width: '150px', height: '32px' }}
           onClick={() => {
             setFormValue({
               name: '',
@@ -459,7 +460,7 @@ function Expenses(): JSX.Element {
             modal.show()
           }}
         >
-          New
+          Add Expenses
         </button>
       </div>
       <div className="area-first w-100 h-100">
@@ -710,11 +711,11 @@ function Expenses(): JSX.Element {
 
             return (
               <div key={index}>
-                <div className="mt-5 ms-3" style={{ fontSize: '19px' }}>
+                <div className="mt-5" style={{ fontSize: '19px' }}>
                   {value.Timeline}
                 </div>
 
-                <div className="ms-5 w-100">
+                <div className="ms-5">
                   <div className="row row-cols-auto">
                     {expenses.map((exp, jndex) => {
                       const category = ExpensesCategory(Number(exp.category))
@@ -849,7 +850,7 @@ function Expenses(): JSX.Element {
                                         style={{ fontSize: '14px' }}
                                         onClick={(e) => {
                                           e.preventDefault()
-                                          setSearchId(exp.id ?? "")
+                                          setSearchId(exp.id ?? '')
                                           const myChatEl = document.getElementById('searchBackdrop')
                                           const chat = new bootstrap.Modal(myChatEl)
                                           chat.show()

@@ -54,7 +54,7 @@
     'area-third area-third'
     'area-third area-third';
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 25px 10px 210px 300px 1fr;
+  grid-template-rows: 40px 10px 210px 300px 1fr;
   padding-left: 50px;
   padding-right: 50px;
   column-gap: 30px;
@@ -118,7 +118,7 @@
       'area-second'
       'area-third'
       'area-third';
-    grid-template-rows: 30px 210px 210px 300px 1fr;
+    grid-template-rows: 40px 210px 210px 300px 1fr;
     grid-template-columns: 100%;
     padding-left: 30px;
     padding-right: 30px;

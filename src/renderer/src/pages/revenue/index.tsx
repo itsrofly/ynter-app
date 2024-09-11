@@ -202,7 +202,7 @@ function Revenue(): JSX.Element {
   const [selectedOption, setSelectedOption] = useState('-1')
 
   // Search Informations about receipt
-  const [searchId, setSearchId] = useState("")
+  const [searchId, setSearchId] = useState('')
 
   // Form State
   const [formValue, setFormValue] = useState<FormState>({
@@ -288,12 +288,12 @@ function Revenue(): JSX.Element {
         form={formValue}
       />
       <Search table="revenue" id={searchId} />
+      <div className="area-top mt-4 ms-1 me-1">
 
-      <div className="area-top mt-3">
         <button
           type="button"
           className="btn btn-sm text-center secondary text-white"
-          style={{ width: '120px', height: '32px' }}
+          style={{ width: '150px', height: '32px' }}
           onClick={() => {
             setFormValue({
               name: '',
@@ -313,7 +313,7 @@ function Revenue(): JSX.Element {
             modal.show()
           }}
         >
-          New
+          Add Earnings
         </button>
       </div>
       <div className="area-first w-100 h-100">
@@ -445,7 +445,7 @@ function Revenue(): JSX.Element {
           </div>
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
-              <div>Revenue</div>
+              <div>Earnings</div>
               <div>
                 <button
                   type="button"
@@ -563,11 +563,11 @@ function Revenue(): JSX.Element {
 
             return (
               <div key={index}>
-                <div className="mt-5 ms-3" style={{ fontSize: '19px' }}>
+                <div className="mt-5" style={{ fontSize: '19px' }}>
                   {value.Timeline}
                 </div>
 
-                <div className="ms-5 w-100">
+                <div className="ms-5">
                   <div className="row row-cols-auto">
                     {revenues.map((rev, jndex) => {
                       const category = RevenueCategory(Number(rev.category))
@@ -702,7 +702,7 @@ function Revenue(): JSX.Element {
                                         style={{ fontSize: '14px' }}
                                         onClick={(e) => {
                                           e.preventDefault()
-                                          setSearchId(rev.id ?? "")
+                                          setSearchId(rev.id ?? '')
                                           const myChatEl = document.getElementById('searchBackdrop')
                                           const chat = new bootstrap.Modal(myChatEl)
                                           chat.show()

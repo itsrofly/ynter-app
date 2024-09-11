@@ -94,7 +94,7 @@ function NewReceipt({
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="modal-title fs-5" id="staticBackdropLabel">
-                    Receipt
+                    Transaction
                   </h1>
                   <button
                     type="button"
