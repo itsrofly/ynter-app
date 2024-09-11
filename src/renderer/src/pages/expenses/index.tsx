@@ -41,6 +41,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 // Icons
 import ArrowBack from '../../assets/arrow_back.svg'
 import ArrowUp from '../../assets/arrow_forward.svg'
+import Search from '@renderer/components/search'
 
 declare const bootstrap
 
@@ -346,6 +347,9 @@ function Expenses(): JSX.Element {
   const [dateList, setDateList] = useState<Dayjs>(dayjs())
   const [selectedOption, setSelectedOption] = useState('-1')
 
+  // Search Informations about receipt
+  const [searchId, setSearchId] = useState('')
+
   // Form State
   const [formValue, setFormValue] = useState<FormState>({
     name: '',
@@ -430,6 +434,7 @@ function Expenses(): JSX.Element {
         setRefresh={setRefresh}
         form={formValue}
       />
+      <Search table='expense' id={searchId} />
       <div className="area-top  mt-3">
         <button
           type="button"
@@ -514,7 +519,10 @@ function Expenses(): JSX.Element {
           </div>
           <div className="mt-auto m-3">
             <div className="d-flex align-items-end justify-content-between h-100">
-              <div>{expensesValue}{currency}</div>
+              <div>
+                {expensesValue}
+                {currency}
+              </div>
               <div>
                 <button
                   type="button"
@@ -796,18 +804,7 @@ function Expenses(): JSX.Element {
                                   )}
                                 </div>
 
-                                <div
-                                  className="ms-auto"
-                                  style={{ cursor: 'pointer' }}
-                                  onClick={() => {
-                                    setFormValue(exp)
-                                    setFormSubmit(false)
-                                    const myModalEl = document.getElementById('staticBackdrop')
-                                    const modal = new bootstrap.Modal(myModalEl)
-                                    myModalEl
-                                    modal.show()
-                                  }}
-                                >
+                                <div className="dropdown-center">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="16"
@@ -815,16 +812,63 @@ function Expenses(): JSX.Element {
                                     fill="currentColor"
                                     className="bi bi-three-dots"
                                     viewBox="0 0 16 16"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
                                   >
                                     <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
                                   </svg>
+
+                                  <ul
+                                    className="dropdown-menu"
+                                    // @ts-ignore
+                                    style={{ '--bs-dropdown-min-width': '10px' }}
+                                  >
+                                    <li>
+                                      <a
+                                        className="dropdown-item"
+                                        href="#"
+                                        style={{ fontSize: '14px' }}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          setFormValue(exp)
+                                          setFormSubmit(false)
+                                          const myModalEl =
+                                            document.getElementById('staticBackdrop')
+                                          const modal = new bootstrap.Modal(myModalEl)
+                                          myModalEl
+                                          modal.show()
+                                        }}
+                                      >
+                                        Edit
+                                      </a>
+                                    </li>
+                                    <li>
+                                      <a
+                                        className="dropdown-item"
+                                        href="#"
+                                        style={{ fontSize: '14px' }}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          setSearchId(exp.id ?? "")
+                                          const myChatEl = document.getElementById('searchBackdrop')
+                                          const chat = new bootstrap.Modal(myChatEl)
+                                          chat.show()
+                                        }}
+                                      >
+                                        Search
+                                      </a>
+                                    </li>
+                                  </ul>
                                 </div>
                               </div>
                             </div>
 
                             <div className="mt-auto m-3">
                               <div className="d-flex align-items-end justify-content-between h-100">
-                                <div>{exp.amount}{currency}</div>
+                                <div>
+                                  {exp.amount}
+                                  {currency}
+                                </div>
                                 <div>{new Date(exp.date).toDateString()}</div>
                               </div>
                             </div>

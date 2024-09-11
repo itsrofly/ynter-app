@@ -196,7 +196,7 @@ export async function fetchBalanceData(timeline: 'm' | 'y'): Promise<BalanceSqlR
   return result
 }
 
-const MarkdownSpan = ({ markdown }): JSX.Element => {
+export const MarkdownSpan = ({ markdown }): JSX.Element => {
   // Convert Markdown to HTML
   const htmlContent = marked(markdown)
 
@@ -374,6 +374,7 @@ function Dashboard(): JSX.Element {
           useTools: true
         })
       })
+      console.log(response)
       const data = response.body
       if (!response.ok || !data) {
         // Check response code if not ok

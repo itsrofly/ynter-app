@@ -19,6 +19,11 @@ interface PLAIDRECEIPT {
     detailed: string
     primary: string
   }
+  location: {
+    address: string
+    city: string
+    country: string
+  }
 }
 
 interface BANK {
@@ -132,13 +137,19 @@ async function fetchBanks() {
 async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
   try {
     for (const receipt of added) {
+      // Formated region
+      const region = 
+      (receipt.location.address ?? "" )
+      + (receipt.location.city ?? "" )
+      + (receipt.location.country ?? "")
+
       if (receipt.amount > 0) {
         // Insert on revenue
         await window.api.Database(
           `
                     INSERT INTO 
-                    revenue (transaction_id, name, amount, date, category, type, bank, recurring)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    revenue (transaction_id, name, amount, date, category, type, bank, recurring, region)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                     `,
           [
             receipt.transaction_id,
@@ -148,7 +159,8 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
             PlaidRevenueCategory(receipt.personal_finance_category),
             0,
             institution_name,
-            0
+            0,
+            region
           ]
         )
       } else {
@@ -156,8 +168,8 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
         await window.api.Database(
           `
                     INSERT INTO 
-                    expense (transaction_id, name, amount, date, category, type, bank, recurring)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    expense (transaction_id, name, amount, date, category, type, bank, recurring, region)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                     `,
           [
             receipt.transaction_id,
@@ -167,7 +179,8 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
             PlaidExpenseCategory(receipt.personal_finance_category),
             0,
             institution_name,
-            0
+            0,
+            region
           ]
         )
       }
@@ -326,7 +339,7 @@ export async function transactionsRefreshaAll() {
     for (const bank of banks)
       await transactionsRefresh(bank.id, bank.cursor ?? null, bank.institution_name)
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
@@ -946,7 +959,7 @@ function Settings() {
                           window.api.showError(
                             `Something has gone wrong. Please report the error.\nError code: 1.0v017`
                           )
-                          console.log(error)
+                          console.error(error)
                         }
                       }}
                     >

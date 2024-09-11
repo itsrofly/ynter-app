@@ -18,8 +18,7 @@ import * as Sentry from '@sentry/electron/renderer'
 import './global.css'
 import './layouts.css'
 // Load sentry
-
-(async (): Promise<void> => {
+;(async (): Promise<void> => {
   Sentry.init({
     dsn: 'https://1c08a05bf43a9d508cdf18e2d9ff25e5@o4507732393525248.ingest.de.sentry.io/4507787898847312'
   })
@@ -144,8 +143,9 @@ export default function App(): JSX.Element {
         <div
           className="pin-input h-100 w-100 d-flex gap-3 
         justify-content-center align-items-center p-2 text-center"
-        id='inputpin'>
-                    <input
+          id="inputpin"
+        >
+          <input
             type="password"
             ref={pinFi}
             maxLength={1}
