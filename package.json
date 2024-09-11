@@ -94,6 +94,7 @@
       "!**/fonts/*"
     ],
     "win": {
+      "publisherName": "Ynter",
       "executableName": "Ynter",
       "target": [
         {
