@@ -554,7 +554,7 @@ export const NumberFormater = (number): string => {
 }
 
 export const NumberFormaterData = (value): number => {
-  return value.toFixed(2)
+  return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export function abbreviateString(str, maxLength): string {
