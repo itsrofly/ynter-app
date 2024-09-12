@@ -15,7 +15,7 @@ function Search({ table, id }: { table: 'revenue' | 'expense'; id: string }): JS
       const ipapi_response = await fetch('https://ipapi.co/json/')
 
       // Set default value
-      let region = data[0].region.length > 0 ? data[0].region : undefined
+      let region = data[0].region ? data[0].region : undefined
 
       if (ipapi_response.ok) {
         const ipapi_data = await ipapi_response.json()
