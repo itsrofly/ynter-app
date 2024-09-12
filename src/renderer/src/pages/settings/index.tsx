@@ -28,8 +28,10 @@ interface PLAIDRECEIPT {
 
 interface BANK {
   id: string
+  internal_id: number
   institution_name: string
-  cursor
+  cursor: string
+  enabled: number
 }
 
 async function exchangePublicToken(public_token) {
@@ -70,8 +72,7 @@ async function createLinkToken(setFeedback, index: number, institution_id?: stri
     const ipapi_data = await ipapi_response.json()
 
     region = ipapi_data.country_code
-  } else 
-    region = "US"
+  } else region = 'US'
 
   const response = await fetch(PLAIDLINK, {
     method: 'POST',
@@ -145,25 +146,26 @@ async function fetchBanks() {
   return result
 }
 
-async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
+async function plaidAdd(added: PLAIDRECEIPT[], institution_id: string, institution_name: string) {
   try {
     for (const receipt of added) {
       // Formated region
-      const region = 
-      (receipt.location.address ?? "" )
-      + (receipt.location.city ?? "" )
-      + (receipt.location.country ?? "")
+      const region =
+        (receipt.location.address ?? '') +
+        (receipt.location.city ?? '') +
+        (receipt.location.country ?? '')
 
       if (receipt.amount > 0) {
         // Insert on revenue
         await window.api.Database(
           `
                     INSERT INTO 
-                    revenue (transaction_id, name, amount, date, category, type, bank, recurring, region)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    revenue (transaction_id, institution_id, name, amount, date, category, type, bank, recurring, region)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                     `,
           [
             receipt.transaction_id,
+            institution_id,
             receipt.name,
             receipt.amount,
             receipt.date,
@@ -179,11 +181,12 @@ async function plaidAdd(added: PLAIDRECEIPT[], institution_name) {
         await window.api.Database(
           `
                     INSERT INTO 
-                    expense (transaction_id, name, amount, date, category, type, bank, recurring, region)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    expense (transaction_id, institution_id, name, amount, date, category, type, bank, recurring, region)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                     `,
           [
             receipt.transaction_id,
+            institution_id,
             receipt.name,
             receipt.amount * -1,
             receipt.date,
@@ -285,7 +288,7 @@ export async function transactionsRefresh(
   let hasMore = true
   // Used to know the last inserted data
   let theCursor = cursor
-
+  console.log("Refreshing", institution_name)
   try {
     // User data
     const access_token = await window.api.Session()
@@ -309,7 +312,7 @@ export async function transactionsRefresh(
         const data = res.data
 
         // Add results
-        await plaidAdd(data.added, institution_name)
+        await plaidAdd(data.added, id, institution_name)
 
         // Modify results
         await plaidMod(data.modified)
@@ -348,7 +351,8 @@ export async function transactionsRefreshaAll() {
   try {
     // Refresh bank per bank
     for (const bank of banks)
-      await transactionsRefresh(bank.id, bank.cursor ?? null, bank.institution_name)
+      if (bank.enabled === 1)
+        await transactionsRefresh(bank.id, bank.cursor ?? null, bank.institution_name)
   } catch (error) {
     console.error(error)
   }
@@ -786,9 +790,9 @@ function Settings() {
                             const bankData: { institution_id; institution_name } =
                               await exchangePublicToken(public_token)
 
-                            if (bankData)
+                            if (bankData) {
                               // Insert Bank id and name to the banks database
-                              await window.api.Utils(
+                              const lastInserted: BANK = await window.api.Utils(
                                 `
                                   INSERT INTO banks (id, institution_name)
                                   VALUES (?, ?)
@@ -797,6 +801,14 @@ function Settings() {
                                                                 `,
                                 [bankData.institution_id, bankData.institution_name]
                               )
+
+                              // Get initial transaction data
+                              await transactionsRefresh(
+                                lastInserted.id,
+                                lastInserted.cursor ?? null,
+                                lastInserted.institution_name
+                              )
+                            }
 
                             // Refresh list of banks
                             setRefresh(!refresh)
@@ -807,8 +819,7 @@ function Settings() {
 
                             // Start feedback loading on refresh all button
                             setRefreshLoading({ index: -1 })
-                            // RefreshAll
-                            await transactionsRefreshaAll()
+
                             // Stop loading refresh all button
                             setRefreshLoading(undefined)
                           },
@@ -844,8 +855,8 @@ function Settings() {
               return (
                 <div
                   key={index}
-                  className="border border-2 rounded d-flex flex-column gap-2"
-                  style={{ height: '150px', width: '380px', marginTop: '50px' }}
+                  className="border border-2 rounded d-flex flex-column gap-2 mb-5"
+                  style={{ height: '180px', width: '380px', marginTop: '50px' }}
                 >
                   <h5 className="mt-3 ms-4">{values.institution_name}</h5>
                   {feedback && (
@@ -853,6 +864,33 @@ function Settings() {
                       {feedback.index == index && feedback.message}
                     </h6>
                   )}
+
+                  <div className="mt-2 form-check form-switch ms-5">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="activebank"
+                      checked={values.enabled === 1}
+                      onClick={async (e) => {
+                        e.preventDefault()
+
+                        // Disable/Enable bank sync
+                        await window.api.Utils(
+                          `
+                          UPDATE banks 
+                          SET  
+                            enabled = ?
+                          WHERE id = ?;`,
+                          [values.enabled === 1 ? 0 : 1, values.id]
+                        )
+                        setRefresh(!refresh)
+                      }}
+                    />
+                    <label className="form-check-label mt-1" htmlFor="activebank">
+                      Active
+                    </label>
+                  </div>
 
                   {index == refreshLoading?.index && (
                     <div
@@ -872,9 +910,11 @@ function Settings() {
                       href="#"
                       className={
                         'btn btn-outline-secondary ' +
-                        (refreshLoading?.index == index ? 'disabled' : '')
+                        (refreshLoading?.index == index || values.enabled === 0 ? 'disabled' : '')
                       }
-                      aria-disabled={refreshLoading?.index == index ? 'true' : 'false'}
+                      aria-disabled={
+                        refreshLoading?.index == index || values.enabled === 0 ? 'true' : 'false'
+                      }
                       style={{ width: '100px' }}
                       onClick={async (e) => {
                         e.preventDefault()
@@ -952,26 +992,26 @@ function Settings() {
                       onClick={async (e) => {
                         e.preventDefault()
                         setRefreshLoading({ index })
-                        try {
-                          const respose = await deleteLinkToken(values.id)
 
-                          if (respose.ok) {
-                            // Delete bank from banks
-                            await window.api.Utils(`DELETE FROM banks WHERE id = ?;`, [values.id])
-                            setRefresh(!refresh)
-                            setFeedback(undefined)
-                          } else
-                            window.api.showError(
-                              `Something has gone wrong. Please try again later.`
-                            )
-                          setRefreshLoading(undefined)
-                        } catch (error) {
-                          setRefreshLoading(undefined)
-                          window.api.showError(
-                            `Something has gone wrong. Please report the error.\nError code: 1.0v017`
-                          )
-                          console.error(error)
-                        }
+                        const respose = await deleteLinkToken(values.id)
+
+                        if (respose.ok) {
+                          // Delete all bank transactions
+                          await window.api.Database(`DELETE FROM revenue WHERE institution_id = ?;`, [
+                            values.id
+                          ])
+                          await window.api.Database(`DELETE FROM expense WHERE institution_id = ?;`, [
+                            values.id
+                          ])
+
+                          // Delete bank from banks
+                          await window.api.Utils(`DELETE FROM banks WHERE id = ?;`, [values.id])
+
+                          setRefresh(!refresh)
+                          setFeedback(undefined)
+                        } else
+                          window.api.showError(`Something has gone wrong. Please try again later.`)
+                        setRefreshLoading(undefined)
                       }}
                     >
                       Delete

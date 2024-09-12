@@ -46,6 +46,7 @@ export const connection = async (
             CREATE TABLE IF NOT EXISTS revenue (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 transaction_id TEXT,
+                institution_id TEXT,
                 name TEXT NOT NULL,
                 note INTEGER,
                 description TEXT,
@@ -66,6 +67,7 @@ export const connection = async (
             CREATE TABLE IF NOT EXISTS expense (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 transaction_id TEXT,
+                institution_id TEXT,
                 name TEXT NOT NULL,
                 note INTEGER,
                 description TEXT,
@@ -120,15 +122,17 @@ export const connectionUtils = async (
   await conn.raw(`
             -- Create table banks if it does not exist
             CREATE TABLE IF NOT EXISTS banks (
-                id TEXT PRIMARY KEY,
+                internal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id TEXT NOT NULL UNIQUE,
                 institution_name TEXT NOT NULL,
-                cursor TEXT
+                cursor TEXT,
+                enabled INTEGER DEFAULT 1
             ); `)
 
   // And just now execute the requested query with params
   const data = await conn.raw(query, params ? [...params] : [])
 
-  /*
+
         // If the query is an insert, retrieve the last inserted row
         if (query.trim().toLowerCase().startsWith("insert")) {
             // Extract the table name from the query
@@ -136,13 +140,12 @@ export const connectionUtils = async (
             if (match) {
                 const tableName = match[1];
                 const lastInsertedRowId = await conn.raw("SELECT last_insert_rowid() AS id;");
-                console.log(lastInsertedRowId);
                 const lastInsertedRow = await conn(tableName)
-                    .where('id', lastInsertedRowId[0].id)
+                    .where('internal_id', lastInsertedRowId[0].id)
                     .first();
                 return lastInsertedRow;
             }
-        }*/
+        }
 
   // received data
   return data
