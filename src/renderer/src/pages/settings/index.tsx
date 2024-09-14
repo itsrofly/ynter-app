@@ -288,7 +288,7 @@ export async function transactionsRefresh(
   let hasMore = true
   // Used to know the last inserted data
   let theCursor = cursor
-  console.log("Refreshing", institution_name)
+  console.log('Refreshing', institution_name)
   try {
     // User data
     const access_token = await window.api.Session()
@@ -357,6 +357,43 @@ export async function transactionsRefreshaAll() {
     console.error(error)
   }
 }
+
+const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return; // No file selected
+  }
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+    try {
+      const jsonString = e.target?.result as string;
+      const jsonContent = JSON.parse(jsonString);
+      // Step 1: Iterate over each table in the JSON content
+      for (const table in jsonContent) {
+        if (Object.hasOwnProperty.call(jsonContent, table)) {
+          const data = jsonContent[table];
+
+          // Step 2: Check if data array is not empty
+          if (Array.isArray(data) && data.length > 0) {
+            for (const row of data) {
+              // Step 3: Construct an INSERT query for each row
+              const columns = Object.keys(row).join(', ');
+              const values = Object.values(row).map(_value => `?`).join(', '); // Simple string escaping; consider using parameterized queries in a production environment
+              const insertQuery = `INSERT INTO ${table} (${columns}) VALUES (${values}) ON CONFLICT DO NOTHING;`;
+
+              // Execute the insert query
+              await window.api.Database(insertQuery, Object.values(row));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error importing data from JSON:', error);
+    }
+  };
+  reader.readAsText(file);
+};
 
 function Settings() {
   const [selected, setSelected] = useState(0)
@@ -683,15 +720,83 @@ function Settings() {
               <h5 className="mt-4 ms-5">Data</h5>
 
               <div className="m-auto d-inline-flex gap-4">
-                <button type="button" className="btn btn-outline-primary">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={async () => {
+                    try {
+                      // Step 1: Get all table names directly from the sqlite_master table
+                      const tablesQuery = `SELECT name FROM sqlite_master WHERE type='table';`
+                      const tablesData = await window.api.Database(tablesQuery)
+                      const tables = tablesData.map((row) => row.name) // Extract table names
+
+                      let jsonContent = {}
+
+                      // Step 2: Fetch and format data for each table
+                      for (const table of tables) {
+                        // If sqlite sequence ignore
+                        if (table === 'sqlite_sequence') continue
+
+                        const query = `SELECT * FROM ${table};`
+                        const data = await window.api.Database(query) // Fetch all data for the current table
+
+                        // Only proceed if data is returned
+                        if (data.length > 0) {
+                          // Step 3: Add table data to jsonContent
+                          jsonContent[table] = data
+                        }
+                      }
+
+                      // Step 4: Convert the jsonContent to a JSON string
+                      const jsonString = JSON.stringify(jsonContent, null, 2) // Pretty print JSON with 2 spaces indentation
+
+                      // Step 5: Trigger the download of the JSON content
+                      const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' })
+                      const link = document.createElement('a')
+                      const url = URL.createObjectURL(blob)
+                      link.setAttribute('href', url)
+                      link.setAttribute('download', 'database_export.json')
+                      link.style.visibility = 'hidden'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                    } catch (error) {
+                      console.error('Error exporting tables to JSON:', error)
+                    }
+                  }}
+                >
                   Backup & Export
                 </button>
 
-                <button type="button" className="btn btn-outline-primary">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  style={{ display: 'none' }}
+                  id="importInput"
+                />
+                <label htmlFor="importInput" className="btn btn-outline-primary">
                   Import
-                </button>
+                </label>
 
-                <button type="button" className="btn btn-outline-danger">
+                <button
+                  type="button"
+                  className="btn btn-outline-danger"
+                  onClick={async () => {
+                    // Step 1: Get all table names directly from the sqlite_master table
+                    const tablesQuery = `SELECT name FROM sqlite_master WHERE type='table';`
+                    const tablesData = await window.api.Database(tablesQuery)
+                    const tables = tablesData.map((row) => row.name) // Extract table names
+
+                    // Step 2: Delete all tables
+                    for (const table of tables) {
+                      if (table !== 'sqlite_sequence') {
+                        // Ignore sqlite_sequence table
+                        await window.api.Database(`DROP TABLE IF EXISTS ${table};`)
+                      }
+                    }
+                  }}
+                >
                   Delete All
                 </button>
               </div>
@@ -997,12 +1102,14 @@ function Settings() {
 
                         if (respose.ok) {
                           // Delete all bank transactions
-                          await window.api.Database(`DELETE FROM revenue WHERE institution_id = ?;`, [
-                            values.id
-                          ])
-                          await window.api.Database(`DELETE FROM expense WHERE institution_id = ?;`, [
-                            values.id
-                          ])
+                          await window.api.Database(
+                            `DELETE FROM revenue WHERE institution_id = ?;`,
+                            [values.id]
+                          )
+                          await window.api.Database(
+                            `DELETE FROM expense WHERE institution_id = ?;`,
+                            [values.id]
+                          )
 
                           // Delete bank from banks
                           await window.api.Utils(`DELETE FROM banks WHERE id = ?;`, [values.id])

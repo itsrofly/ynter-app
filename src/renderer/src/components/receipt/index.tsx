@@ -259,8 +259,8 @@ function NewReceipt({
                       type="button"
                       className="btn btn-danger"
                       data-bs-dismiss="modal"
-                      onClick={() => {
-                        handleDeleteReceipt(idValue, table)
+                      onClick={async () => {
+                        await handleDeleteReceipt(idValue, table)
                         window.api.deleteFile(fileValue)
                         setRefresh(!refresh)
                       }}

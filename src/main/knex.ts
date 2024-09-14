@@ -159,6 +159,7 @@ export const connection = async (
       .match(/^insert\s+into\s+(\w+)/i)
     if (match) {
       const tableName = match[1]
+      if (tableName !== "sqlite_sequence") {
       const lastInsertedRowId = await conn.raw('SELECT last_insert_rowid() AS id;')
       const lastInsertedRow = await conn(tableName).where('id', lastInsertedRowId[0].id).first()
 
@@ -166,6 +167,7 @@ export const connection = async (
       await conn.destroy()
       await encryptFile(decryptedFile, encryptedFile)
       return lastInsertedRow
+      }
     }
   }
   // Encrypt File
@@ -210,11 +212,13 @@ export const connectionUtils = async (
     const match = query.trim().toLowerCase().match(/^insert\s+into\s+(\w+)/i);
     if (match) {
       const tableName = match[1];
-      const lastInsertedRowId = await conn.raw("SELECT last_insert_rowid() AS id;");
-      const lastInsertedRow = await conn(tableName)
-        .where('internal_id', lastInsertedRowId[0].id)
-        .first();
-      return lastInsertedRow;
+      if (tableName !== "sqlite_sequence") {
+        const lastInsertedRowId = await conn.raw("SELECT last_insert_rowid() AS id;");
+        const lastInsertedRow = await conn(tableName)
+          .where('internal_id', lastInsertedRowId[0].id)
+          .first();
+        return lastInsertedRow;
+      }
     }
   }
 

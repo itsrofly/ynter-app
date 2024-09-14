@@ -510,29 +510,31 @@ export async function updateRecurring(table: 'revenue' | 'expense'): Promise<voi
           `
           INSERT INTO ${table} (name, description, amount, date, category, type, bank, recurring)
           SELECT 
-              '${item.name}',
-              '${item.description}',
-              ${item.amount}, 
+              ?,
+              ?,
+              ?, 
               strftime('%Y', 'now') || '-' || strftime('%m', 'now') || '-' || printf('%02d', ${item.day}),
-              '${item.category}',
-              '${item.type}',
-              '${item.bank}',
-              ${item.recurring}
+              ?,
+              ?,
+              ?,
+              ?
           WHERE
               NOT EXISTS (
                   SELECT 1
                   FROM ${table}
-                  WHERE recurring = 1
-                  AND name = '${item.name}'
-                  AND description = '${item.description}'
-                  AND amount = ${item.amount}
+                  WHERE name = ?
+                  AND description = ?
+                  AND amount = ?
                   AND date = strftime('%Y', 'now') || '-' || strftime('%m', 'now') || '-' || printf('%02d', ${item.day})
-                  AND category = '${item.category}'
-                  AND type = '${item.type}'
-                  AND bank = '${item.bank}'
+                  AND category = ?
+                  AND type = ?
+                  AND bank = ?
+                  AND recurring = ?
               );
           `
-        )
+        , [item.name, item.description, item.amount, item.category, item.type, item.bank, item.recurring,
+          item.name, item.description, item.amount, item.category, item.type, item.bank, item.recurring
+        ])
       }
     }
   } catch (error) {
