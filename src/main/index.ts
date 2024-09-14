@@ -96,6 +96,7 @@ function createWindow(): void {
       contextIsolation: true,
       sandbox: false, //  if you want to use bytecode to protect preload scripts
       webSecurity: true,
+      webviewTag: true,
       devTools: !app.isPackaged
     },
     ...(process.platform === 'linux' ? { icon } : {})

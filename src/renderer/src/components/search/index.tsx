@@ -1,4 +1,5 @@
 import { MarkdownSpan } from '@renderer/pages/dashboard'
+import { WebviewTag } from 'electron'
 import { useEffect, useState } from 'react'
 
 const SEARCH_API = import.meta.env.VITE_SEARCHRECEIPT
@@ -104,9 +105,27 @@ ${place.formattedAddress ?? 'Not Found'}\n
 
             <div className="modal-body ps-5 pe-5 pt-4" style={{ userSelect: 'text' }}>
               <MarkdownSpan markdown={chat} />
+
+              <webview
+                id="searchWebview"
+                className="w-100"
+                style={{ height: '300px' }}
+                src={'https://www.google.com/search?q=' + title}
+                useragent="Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko; googleweblight) Chrome/38.0.1025.166 Mobile Safari/535.19"
+              ></webview>
+              <iframe />
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+                onClick={() => {
+                  const webview = document.querySelector('webview') as WebviewTag
+                  // Reset search to default
+                  webview.src = 'https://www.google.com/search?q=' + title
+                }}
+              >
                 Close
               </button>
             </div>
