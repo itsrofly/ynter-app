@@ -5,7 +5,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin(), bytecodePlugin({ protectedStrings: ["no justice, no code"]}), sentryVitePlugin({
+    plugins: [externalizeDepsPlugin(), bytecodePlugin({ protectedStrings: ["JAZ^&UAKL2z"]}), sentryVitePlugin({
       org: "ynter",
       project: "electron"
     })],
@@ -19,7 +19,7 @@ export default defineConfig({
     }
   },
   preload: {
-    plugins: [externalizeDepsPlugin(), bytecodePlugin({ protectedStrings: ["no justice, no code"]}), sentryVitePlugin({
+    plugins: [externalizeDepsPlugin(), bytecodePlugin({ protectedStrings: ["JAZ^&UAKL2z"]}), sentryVitePlugin({
       org: "ynter",
       project: "electron"
     })],

@@ -28,7 +28,7 @@ function getFilesizeInMb(filename): number {
   return fileSizeInMb / (1024 * 1024)
 }
 
-function generateRandomString(length): string {
+export function generateRandomString(length): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
   const charactersLength = characters.length
@@ -318,6 +318,8 @@ if (!gotTheLock) {
 
         // Create server listener
         const url = callback_server()
+
+        console.log(decryptedData)
 
         // Login using supabase Otp, 
         // This will reset the User file only if otp is a total success

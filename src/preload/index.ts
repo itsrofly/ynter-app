@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
+
+// Ppin attempts
 let pinAttempts = 1;
+
+// Setup lock timer
+let inactivityTimer
+
 // Used to lock display
 async function lockDisplay() {
   const result = await ipcRenderer.invoke('Pin:has')
@@ -112,12 +118,11 @@ if (process.contextIsolated) {
         // Needs pin
         lockDisplay()
 
-        // Setup lock timer
-        let inactivityTimer
-        const inactivityTime = 10 * 60 * 1000 // in 10 minutes of inactivity
 
+        const inactivityTime = 3 * 60 * 1000 // in 10 minutes of inactivity
         function resetTimer() {
           clearTimeout(inactivityTimer)
+          console.log("Lock CountDown")
           inactivityTimer = setTimeout(lockDisplay, inactivityTime)
         }
 
