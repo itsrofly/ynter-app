@@ -53,7 +53,7 @@
     "marked": "^14.0.0",
     "pdf-parse": "^1.1.1",
     "react-router-dom": "^6.26.0",
-    "recharts": "^2.12.7",
+    "recharts": "^2.13.0-alpha.5",
     "sqlite3": "^5.1.7",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

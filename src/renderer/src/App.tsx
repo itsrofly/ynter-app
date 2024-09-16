@@ -15,8 +15,9 @@ import { updateRecurring } from './components/support'
 import * as Sentry from '@sentry/electron/renderer'
 
 // External
-import './global.css'
-import './layouts.css'
+import './assets/css/global.css'
+import './assets/css/layouts.css'
+
 // Load sentry
 ;(async (): Promise<void> => {
   Sentry.init({

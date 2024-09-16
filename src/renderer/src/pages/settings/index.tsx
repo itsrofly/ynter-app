@@ -690,6 +690,7 @@ function Settings() {
                   role="switch"
                   id="lockscreen"
                   checked={hasPin}
+                  onChange={() => {}}
                   disabled={!hasPin}
                   data-bs-toggle="modal"
                   data-bs-target="#pinmodal"
@@ -977,6 +978,7 @@ function Settings() {
                       role="switch"
                       id="activebank"
                       checked={values.enabled === 1}
+                      onChange={() => {}}
                       onClick={async (e) => {
                         e.preventDefault()
 

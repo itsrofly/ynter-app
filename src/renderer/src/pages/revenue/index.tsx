@@ -1,6 +1,6 @@
 // React
 import { useState, useEffect } from 'react'
-import currencies from '../../assets/iso-country-currency.json'
+import currencies from '../../assets/javascript/iso-country-currency.json'
 
 // Components
 import NewReceipt from '../../components/receipt'
@@ -39,8 +39,8 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // Icons
-import ArrowBack from '../../assets/arrow_back.svg'
-import ArrowUp from '../../assets/arrow_forward.svg'
+import ArrowBack from '../../assets/icons/arrow_back.svg'
+import ArrowUp from '../../assets/icons/arrow_forward.svg'
 import Search from '@renderer/components/search'
 
 declare const bootstrap

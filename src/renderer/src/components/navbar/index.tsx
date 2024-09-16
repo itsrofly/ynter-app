@@ -2,14 +2,14 @@ import { Outlet, NavLink } from 'react-router-dom'
 import { useState } from 'react'
 
 // Icons
-import Logo from '../../assets/logo.svg'
-import Home from '../../assets/home.svg'
-import Wallet from '../../assets/wallet.svg'
-import Cart from '../../assets/cart.svg'
-import Calendar from '../../assets/calendar.svg'
-import Clipboard from '../../assets/clipboard.svg'
-import Person from '../../assets/person.svg'
-import Google from '../../assets/google.png'
+import Logo from '../../assets/icons/logo.svg'
+import Home from '../../assets/icons/home.svg'
+import Wallet from '../../assets/icons/wallet.svg'
+import Cart from '../../assets/icons/cart.svg'
+import Calendar from '../../assets/icons/calendar.svg'
+import Clipboard from '../../assets/icons/clipboard.svg'
+import Person from '../../assets/icons/person.svg'
+import Google from '../../assets/icons/google.png'
 
 const WEBSITE = import.meta.env.VITE_WEBSITE
 

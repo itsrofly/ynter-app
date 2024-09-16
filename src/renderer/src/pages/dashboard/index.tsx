@@ -1,6 +1,6 @@
 // React
 import { useEffect, useRef, useState } from 'react'
-import currencies from '../../assets/iso-country-currency.json'
+import currencies from '../../assets/javascript/iso-country-currency.json'
 
 // Components
 // import { Agenda, fetchEventData } from "../agenda";
@@ -587,7 +587,7 @@ function Dashboard(): JSX.Element {
           }}
         >
           <path
-            fill-rule="evenodd"
+            fillRule="evenodd"
             d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
           />
           <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
@@ -774,9 +774,9 @@ function Dashboard(): JSX.Element {
                   >
                     <div className="card secondary border-primary rounded text-white fs-5">
                       <div className="card-body  ">
-                        <p className="card-text">
+                        <div className="card-text">
                           <MarkdownSpan markdown={message.content} />
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -790,9 +790,9 @@ function Dashboard(): JSX.Element {
                   >
                     <div className="card border-0 bg-transparent">
                       <div className="card-body rounded fs-5 bg-transparent">
-                        <p className="card-text text-black">
+                        <div className="card-text text-black">
                           <MarkdownSpan markdown={message.content} />
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
